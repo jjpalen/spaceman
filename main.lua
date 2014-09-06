@@ -33,6 +33,8 @@ local maxHeight = 0
 local currentHeight = 0
 local score = 0
 
+local resistanceCoeff = 0.001
+
 local rocketforce = -5000
 local metersPerScreen
 
@@ -49,34 +51,31 @@ function love.load()
 	groundImage = love.graphics.newImage("assets/ground_0.png")
 	groundY = love.graphics:getHeight() - groundImage:getHeight()
 
-	love.graphics.setBackgroundColor(126, 192, 238)
+	love.graphics.setBackgroundColor(30, 0, 30)
 
 	love.physics.setMeter(64)
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
 	world = love.physics.newWorld(0, 64*9.81*.75, true)
 	--world = love.physics.newWorld(0, 0, true)
-	rocketforce = 2300
+	rocketforce = 2000
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
 	local x,y,mass,inertia = spaceship.body:getMassData()
 	x = x + spaceshipImage:getHeight() / 6
-	mass = mass * 50000000000
-	inertia = inertia * 50000000000
-	print (mass)
-	print (inertia)
-	--spaceship.body:setMassData(x, y, 100, 100)
+	spaceship.body:setMassData(x, y, mass, inertia)
 	spaceship.body:setAngularDamping(0.07)
 	spaceship.body:setLinearDamping(0.07)
-	spaceship.body:setAngle(-math.pi/2)
+	spaceship.body:setAngle(-math.pi/2 * random99to101()^6)
+	spaceship.body:setBullet(true)
 	spaceship.shape = love.physics.newPolygonShape(48,0, -16,48, -32,48, -48,0, -32,-48, -16,-48)
 	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 1.7) -- Attach fixture to body and give it a density of 1.
-	print (spaceship.fixture:getMassData())
 
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
 	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions())
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
+	ground.fixture:setRestitution(0.25)
 
 	walls = {}
 	walls.leftBody = love.physics.newBody(world, 0, 0)
@@ -109,7 +108,10 @@ function love.update(dt)
 	walls.leftBody:setPosition(0, spaceship.body:getY())
 	walls.rightBody:setPosition(love.window:getWidth(), spaceship.body:getY())
 
-
+	local xVelocity, yVelocity = spaceship.body:getLinearVelocity();
+	if yVelocity < 0 then
+		spaceship.body:applyForce(0, resistanceCoeff * yVelocity^2)
+	end
 	if love.keyboard.isDown("left") then
 		leftOn = true
 		leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
@@ -124,7 +126,7 @@ function love.update(dt)
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
 			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
-			spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
+			spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY))
 	end
 	if love.keyboard.isDown(" ") then
 		love.load()
