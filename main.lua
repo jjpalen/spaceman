@@ -61,8 +61,6 @@ function love.load()
 	maxHeight = 0
 	currentHeight = 0
 	score = 0
-	prevMark = {}
-	nextMark = {}
 end
 
 function love.update(dt)
@@ -87,9 +85,9 @@ function love.update(dt)
 	end
 
 	previousLine = getPreviousLine()
-	--prevMark.body
 	nextLine = getNextLine()
 	cameraMiddleHeight = -cameraMiddle + 325
+
 	moveCamera = false
 	currentHeight = startY - spaceship.body:getY()
 	if currentHeight > maxHeight then
@@ -170,7 +168,6 @@ function getNextLine()
 end
 
 function drawLine(height)
-	--cameraMiddle +300, cameraMiddle - 300
 	if math.abs(cameraMiddleHeight - height) < love.window.getHeight()/2 then
 		local printHeight = cameraMiddle + cameraMiddleHeight - height
 		love.graphics.print(height, 25, printHeight)
