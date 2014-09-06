@@ -8,6 +8,7 @@ require "camera"
 local moveCamera = false
 local moveCameraAmount = 0
 local cameraMiddle = love.graphics:getHeight() / 2
+local cameraQuarter = 3 * cameraMiddle / 2
 
 local scoreDisplayRoot = "Score: "
 local scoreDisplay = "Score: 0"
@@ -48,7 +49,7 @@ function love.load()
 	shape = love.physics.newRectangleShape(spaceship:getDimensions())
 	fixture = love.physics.newFixture(body, shape, 1) -- Attach fixture to body and give it a density of 1.
 	ground = {}
-	ground.body = love.physics.newBody(world, 0, groundY) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
+	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
 	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions()) --make a rectangle with a width of 650 and a height of 50
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
 	rightOn = false
@@ -86,6 +87,14 @@ function love.update(dt)
 		moveCamera = true
 		moveCameraAmount = body:getY() - cameraMiddle --this is negative
 		cameraMiddle = cameraMiddle + moveCameraAmount
+		cameraQuarter = cameraQuarter + moveCameraAmount
+		scoreY = scoreY + moveCameraAmount
+	end
+	if body:getY() > cameraQuarter then
+		moveCamera = true
+		moveCameraAmount = body:getY() - cameraQuarter --this is positive
+		cameraMiddle = cameraMiddle + moveCameraAmount
+		cameraQuarter = cameraQuarter + moveCameraAmount
 		scoreY = scoreY + moveCameraAmount
 	end
 
@@ -109,6 +118,7 @@ function displayScore()
 	love.graphics.print("maxHeight: "..maxHeight, scoreX, scoreY + 50)
 	love.graphics.print("currentHeight: "..currentHeight, scoreX, scoreY + 100)
 	love.graphics.print("cameraMiddle: "..cameraMiddle, scoreX, scoreY + 150)
+	love.graphics.print("cameraQuarter: "..cameraQuarter, scoreX, scoreY + 175)
 	love.graphics.print("bodyY: "..body:getY(), scoreX, scoreY + 200)
 
 	if rightOn then
