@@ -52,10 +52,22 @@ function love.load()
 	spaceship.body:setAngle(-math.pi/2)
 	shape = love.physics.newRectangleShape(spaceshipImage:getDimensions())
 	fixture = love.physics.newFixture(spaceship.body, shape, 1) -- Attach fixture to body and give it a density of 1.
+
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
 	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions())
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
+
+	walls = {}
+	walls.leftBody = love.physics.newBody(world, 0, 0)
+	walls.leftShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
+	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
+	walls.leftFixture:setRestitution(0.9)
+	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
+	walls.rightShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
+	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
+	walls.rightFixture:setRestitution(0.9)
+
 	rightOn = false
 	leftOn = false
 	maxHeight = 0
@@ -68,15 +80,19 @@ function love.update(dt)
 	rightOn = false
 	world:update(dt)
 
+	walls.leftBody:setPosition(0, spaceship.body:getY())
+	walls.rightBody:setPosition(love.window:getWidth(), spaceship.body:getY())
+
+
 	if love.keyboard.isDown("left") then
 		leftOn = true
-		leftRocketOffsetX = -spaceshipImage:getWidth() * 2/3
+		leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()), rocketforce * math.sin(spaceship.body:getAngle()), spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
 	if love.keyboard.isDown("right") then
 		rightOn = true
-		rightRocketOffsetX = -spaceshipImage:getWidth() * 2/3
+		rightRocketOffsetX = -spaceshipImage:getWidth() * 1/2
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()), rocketforce * math.sin(spaceship.body:getAngle()), spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
 	end
