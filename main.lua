@@ -193,11 +193,11 @@ function displayScore()
 	love.graphics.print(heightDisplay, heightX, heightY)
 	love.graphics.print(maxDisplay, maxX, maxY)
 	--debug
-	love.graphics.print("maxHeight: "..maxHeight, maxX, maxY + 50)
-	love.graphics.print("currentHeight: "..currentHeight, maxX, maxY + 100)
-	love.graphics.print("cameraMiddle: "..cameraMiddle, maxX, maxY + 150)
-	love.graphics.print("cameraQuarter: "..cameraQuarter, maxX, maxY + 175)
-	love.graphics.print("bodyY: "..spaceship.body:getY(), maxX, maxY + 200)
+	-- love.graphics.print("maxHeight: "..maxHeight, maxX, maxY + 50)
+	-- love.graphics.print("currentHeight: "..currentHeight, maxX, maxY + 100)
+	-- love.graphics.print("cameraMiddle: "..cameraMiddle, maxX, maxY + 150)
+	-- love.graphics.print("cameraQuarter: "..cameraQuarter, maxX, maxY + 175)
+	-- love.graphics.print("bodyY: "..spaceship.body:getY(), maxX, maxY + 200)
 
 	if rightOn then
 		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
@@ -207,9 +207,9 @@ function displayScore()
 		local worldX, worldY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
 		love.graphics.circle("fill", worldX , worldY , 10, 100)
 	end
-	love.graphics.print("prevline: "..previousLine, maxX, maxY + 225)
-	love.graphics.print("nextline: "..nextLine, maxX, maxY + 250)
-	love.graphics.print("cameraHeight "..-cameraMiddle + 325, maxX, maxY + 275)
+	-- love.graphics.print("prevline: "..previousLine, maxX, maxY + 225)
+	-- love.graphics.print("nextline: "..nextLine, maxX, maxY + 250)
+	-- love.graphics.print("cameraHeight "..-cameraMiddle + 325, maxX, maxY + 275)
 end
 
 function getPreviousLine()
