@@ -81,11 +81,13 @@ function love.load()
 	walls.leftBody = love.physics.newBody(world, 0, 0)
 	walls.leftShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
-	walls.leftFixture:setRestitution(0.85)
+	walls.leftFixture:setRestitution(0.9)
+	walls.leftFixture:setFriction(1)
 	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
 	walls.rightShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
-	walls.rightFixture:setRestitution(0.85)
+	walls.rightFixture:setRestitution(0.9)
+	walls.rightFixture:setFriction(1)
 
 	rightOn = false
 	leftOn = false
@@ -109,6 +111,7 @@ function love.update(dt)
 	walls.rightBody:setPosition(love.window:getWidth(), spaceship.body:getY())
 
 	local xVelocity, yVelocity = spaceship.body:getLinearVelocity();
+	spaceship.body:applyForce(-resistanceCoeff * xVelocity * math.abs(xVelocity), 0)
 	if yVelocity < 0 then
 		spaceship.body:applyForce(0, resistanceCoeff * yVelocity^2)
 	end
