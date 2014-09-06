@@ -23,6 +23,11 @@ local scoreY = 50
 local rocketforce = -5000
 
 local ground = {}
+
+function random99to101()
+	return (.99 + .02 * love.math.random())
+end
+
 function love.load()
 
 	spaceshipImage = love.graphics.newImage("assets/spaceship96x96.png")
@@ -62,11 +67,11 @@ function love.load()
 	walls.leftBody = love.physics.newBody(world, 0, 0)
 	walls.leftShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
-	walls.leftFixture:setRestitution(0.8)
+	walls.leftFixture:setRestitution(0.85)
 	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
 	walls.rightShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
-	walls.rightFixture:setRestitution(0.8)
+	walls.rightFixture:setRestitution(0.85)
 
 	rightOn = false
 	leftOn = false
@@ -85,13 +90,17 @@ function love.update(dt)
 		leftOn = true
 		leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
-		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()), rocketforce * math.sin(spaceship.body:getAngle()), spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
+			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
+			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
 	if love.keyboard.isDown("right") then
 		rightOn = true
 		rightRocketOffsetX = -spaceshipImage:getWidth() * 1/2
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
-		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()), rocketforce * math.sin(spaceship.body:getAngle()), spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
+			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
+			spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
 	end
 	if love.keyboard.isDown(" ") then
 		love.load()
