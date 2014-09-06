@@ -10,16 +10,28 @@ local moveCameraAmount = 0
 local cameraMiddle = love.graphics:getHeight() / 2
 local cameraQuarter = 3 * cameraMiddle / 2
 
-local scoreDisplayRoot = "Height: "
-local scoreDisplay = scoreDisplayRoot .. "0"
+local heightDisplayRoot = "Height: "
+local heightDisplay = heightDisplayRoot .. "0"
+
+local heightX = 50
+local heightY = 50
+
+local heightDisplayRoot = "Height: "
+local heightDisplay = heightDisplayRoot .. "0"
+
+local heightX = 50
+local heightY = 50
+
+local maxDisplayRoot = "Max: "
+local maxDisplay = maxDisplayRoot .. "0"
+
+local maxX = 50
+local maxY = 75
 
 local startY
 local maxHeight = 0
 local currentHeight = 0
 local score = 0
-
-local scoreX = 50
-local scoreY = 50
 
 local rocketforce = -5000
 local metersPerScreen
@@ -73,6 +85,12 @@ function love.load()
 	maxHeight = 0
 	currentHeight = 0
 	score = 0
+	
+	heightDisplay = heightDisplayRoot .. "0"
+	love.graphics.print(heightDisplay, heightX, heightY)
+	maxDisplay = maxDisplayRoot .. "0"
+	love.graphics.print(maxDisplay, maxX, maxY)
+
 end
 
 function love.update(dt)
@@ -108,22 +126,26 @@ function love.update(dt)
 	currentHeight = startY - spaceship.body:getY()
 	if currentHeight > maxHeight then
 		maxHeight = currentHeight
-		score = math.floor(maxHeight)
-		scoreDisplay = scoreDisplayRoot .. score
+		maxText = math.floor(maxHeight)
+		maxDisplay = maxDisplayRoot .. maxText
 	end
+	heightText = math.floor(currentHeight)
+	heightDisplay = heightDisplayRoot .. heightText
 	if spaceship.body:getY() < cameraMiddle then
 		moveCamera = true
 		moveCameraAmount = spaceship.body:getY() - cameraMiddle --this is negative
 		cameraMiddle = cameraMiddle + moveCameraAmount
 		cameraQuarter = cameraQuarter + moveCameraAmount
-		scoreY = scoreY + moveCameraAmount
+		heightY = heightY + moveCameraAmount
+		maxY = maxY + moveCameraAmount
 	end
 	if spaceship.body:getY() > cameraQuarter then
 		moveCamera = true
 		moveCameraAmount = spaceship.body:getY() - cameraQuarter --this is positive
 		cameraMiddle = cameraMiddle + moveCameraAmount
 		cameraQuarter = cameraQuarter + moveCameraAmount
-		scoreY = scoreY + moveCameraAmount
+		heightY = heightY + moveCameraAmount
+		maxY = maxY + moveCameraAmount
 	end
 
 end
@@ -148,13 +170,14 @@ function love.draw()
 end
 
 function displayScore()
-	love.graphics.print(scoreDisplay, scoreX, scoreY)
+	love.graphics.print(heightDisplay, heightX, heightY)
+	love.graphics.print(maxDisplay, maxX, maxY)
 	--debug
-	love.graphics.print("maxHeight: "..maxHeight, scoreX, scoreY + 50)
-	love.graphics.print("currentHeight: "..currentHeight, scoreX, scoreY + 100)
-	love.graphics.print("cameraMiddle: "..cameraMiddle, scoreX, scoreY + 150)
-	love.graphics.print("cameraQuarter: "..cameraQuarter, scoreX, scoreY + 175)
-	love.graphics.print("bodyY: "..spaceship.body:getY(), scoreX, scoreY + 200)
+	love.graphics.print("maxHeight: "..maxHeight, maxX, maxY + 50)
+	love.graphics.print("currentHeight: "..currentHeight, maxX, maxY + 100)
+	love.graphics.print("cameraMiddle: "..cameraMiddle, maxX, maxY + 150)
+	love.graphics.print("cameraQuarter: "..cameraQuarter, maxX, maxY + 175)
+	love.graphics.print("bodyY: "..spaceship.body:getY(), maxX, maxY + 200)
 
 	if rightOn then
 		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
@@ -164,9 +187,9 @@ function displayScore()
 		local worldX, worldY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
 		love.graphics.circle("fill", worldX , worldY , 10, 100)
 	end
-	love.graphics.print("prevline: "..previousLine, scoreX, scoreY + 225)
-	love.graphics.print("nextline: "..nextLine, scoreX, scoreY + 250)
-	love.graphics.print("cameraHeight "..-cameraMiddle + 325, scoreX, scoreY + 275)
+	love.graphics.print("prevline: "..previousLine, maxX, maxY + 225)
+	love.graphics.print("nextline: "..nextLine, maxX, maxY + 250)
+	love.graphics.print("cameraHeight "..-cameraMiddle + 325, maxX, maxY + 275)
 end
 
 function getPreviousLine()
