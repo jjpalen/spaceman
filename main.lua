@@ -8,16 +8,18 @@ local scoreY = 50
 
 function love.load()
 	love.physics.setMeter(64)
-	world = love.physics.newWorld(0, 64*9.81, true)
+	world = love.physics.newWorld(0, 64*9.81*.75, true)
 	--world = love.physics.newWorld(0, 0, true)
-	rocketforce = 3000
+	rocketforce = 2300
 	image = love.graphics.newImage("spaceship96x96.png")
 	body = love.physics.newBody(world, 650/2, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	local x,y,mass,inertia = body:getMassData()
-	x = x + image:getHeight() / 3
-	mass = mass * 5000
-	inertia = inertia * 50
+	x = x + image:getHeight() / 4
+	--mass = mass * 5000
+	--inertia = inertia * 5000
 	body:setMassData(x, y, mass, inertia)
+	body:setAngularDamping(0.07)
+	body:setLinearDamping(0.07)
 	body:setAngle(-math.pi/2)
 	shape = love.physics.newRectangleShape(image:getDimensions())
 	fixture = love.physics.newFixture(body, shape, 1) -- Attach fixture to body and give it a density of 1.
@@ -36,21 +38,19 @@ function love.update(dt)
 	if love.keyboard.isDown("left") then
 		leftOn = true
 		leftRocketOffsetX = -image:getWidth() * 2/3
-		leftRocketOffsetY = -image:getHeight() / 3
-		local rocketAngle = .1
-		body:applyForce(rocketforce * math.cos(body:getAngle() + rocketAngle), rocketforce * math.sin(body:getAngle() - rocketAngle), body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
+		leftRocketOffsetY = -image:getHeight() / 4
+		body:applyForce(rocketforce * math.cos(body:getAngle()), rocketforce * math.sin(body:getAngle()), body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
 	if love.keyboard.isDown("right") then
 		rightOn = true
 		rightRocketOffsetX = -image:getWidth() * 2/3
-		rightRocketOffsetY = image:getHeight() / 3 
-		local rocketAngle = .1
-		body:applyForce(rocketforce * math.cos(body:getAngle() + rocketAngle), rocketforce * math.sin(body:getAngle() + rocketAngle), body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
+		rightRocketOffsetY = image:getHeight() / 4
+		body:applyForce(rocketforce * math.cos(body:getAngle()), rocketforce * math.sin(body:getAngle()), body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
+	end
+	if love.keyboard.isDown(" ") then
+		love.load()
 	end
 end
-
-local v = Vec2(0.0, 3.0)
-local multiplied_v = v * 3
 
 function love.draw()
 	love.graphics.draw(image,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,image:getDimensions() / 2)
