@@ -25,7 +25,7 @@ local rocketforce = -5000
 local ground = {}
 function love.load()
 
-	spaceship = love.graphics.newImage("assets/spaceship96x96.png")
+	spaceshipImage = love.graphics.newImage("assets/spaceship96x96.png")
 	rocketTexture = love.graphics.newImage("assets/yellowtexture.png")
 	groundImage = love.graphics.newImage("assets/ground_0.png")
 	groundY = love.window:getHeight() - groundImage:getHeight()
@@ -38,12 +38,14 @@ function love.load()
 	world = love.physics.newWorld(0, 64*9.81*.75, true)
 	--world = love.physics.newWorld(0, 0, true)
 	rocketforce = 2300
-	body = love.physics.newBody(world, 650/2, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
-	startY = body:getY()
-	local x,y,mass,inertia = body:getMassData()
-	x = x + spaceship:getHeight() / 4
+	spaceship = {}
+	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
+	startY = spaceship.body:getY()
+	local x,y,mass,inertia = spaceship.body:getMassData()
+	x = x + spaceshipImage:getHeight() / 4
 	--mass = mass * 5000
 	--inertia = inertia * 5000
+<<<<<<< HEAD
 	body:setMassData(x, y, mass, inertia)
 	body:setAngularDamping(0.07)
 	body:setLinearDamping(0.07)
@@ -53,6 +55,16 @@ function love.load()
 
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) 
+=======
+	spaceship.body:setMassData(x, y, mass, inertia)
+	spaceship.body:setAngularDamping(0.07)
+	spaceship.body:setLinearDamping(0.07)
+	spaceship.body:setAngle(-math.pi/2)
+	shape = love.physics.newRectangleShape(spaceshipImage:getDimensions())
+	fixture = love.physics.newFixture(spaceship.body, shape, 1) -- Attach fixture to body and give it a density of 1.
+	ground = {}
+	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
+>>>>>>> b3e1a2ef5e4bae7b57b6761c1dabc0670daea7ed
 	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions())
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
 
@@ -77,36 +89,36 @@ function love.update(dt)
 
 	if love.keyboard.isDown("left") then
 		leftOn = true
-		leftRocketOffsetX = -spaceship:getWidth() * 2/3
-		leftRocketOffsetY = -spaceship:getHeight() / 4
-		body:applyForce(rocketforce * math.cos(body:getAngle()), rocketforce * math.sin(body:getAngle()), body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
+		leftRocketOffsetX = -spaceshipImage:getWidth() * 2/3
+		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()), rocketforce * math.sin(spaceship.body:getAngle()), spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
 	if love.keyboard.isDown("right") then
 		rightOn = true
-		rightRocketOffsetX = -spaceship:getWidth() * 2/3
-		rightRocketOffsetY = spaceship:getHeight() / 4
-		body:applyForce(rocketforce * math.cos(body:getAngle()), rocketforce * math.sin(body:getAngle()), body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
+		rightRocketOffsetX = -spaceshipImage:getWidth() * 2/3
+		rightRocketOffsetY = spaceshipImage:getHeight() / 4
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()), rocketforce * math.sin(spaceship.body:getAngle()), spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
 	end
 	if love.keyboard.isDown(" ") then
 		love.load()
 	end
 
 	moveCamera = false
-	currentHeight = startY - body:getY()
+	currentHeight = startY - spaceship.body:getY()
 	if currentHeight > maxHeight then
 		maxHeight = currentHeight
 		scoreDisplay = scoreDisplayRoot .. math.floor(maxHeight / 10)
 	end
-	if body:getY() < cameraMiddle then
+	if spaceship.body:getY() < cameraMiddle then
 		moveCamera = true
-		moveCameraAmount = body:getY() - cameraMiddle --this is negative
+		moveCameraAmount = spaceship.body:getY() - cameraMiddle --this is negative
 		cameraMiddle = cameraMiddle + moveCameraAmount
 		cameraQuarter = cameraQuarter + moveCameraAmount
 		scoreY = scoreY + moveCameraAmount
 	end
-	if body:getY() > cameraQuarter then
+	if spaceship.body:getY() > cameraQuarter then
 		moveCamera = true
-		moveCameraAmount = body:getY() - cameraQuarter --this is positive
+		moveCameraAmount = spaceship.body:getY() - cameraQuarter --this is positive
 		cameraMiddle = cameraMiddle + moveCameraAmount
 		cameraQuarter = cameraQuarter + moveCameraAmount
 		scoreY = scoreY + moveCameraAmount
@@ -118,8 +130,13 @@ function love.draw()
 	camera:set()
 	displayScore()
 	-- if current height below the first camera change
-	love.graphics.draw(groundImage, 0, groundY)
-	love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
+	--love.graphics.draw(groundImage, 0, groundY)
+	--love.graphics.setColor(72, 160, 14) -- set the drawing color to green for the ground
+  	love.graphics.polygon("fill", ground.body:getWorldPoints(ground.shape:getPoints())) -- draw a "filled in" polygon using the ground's coordinates
+	
+	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
+	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
+
 	if (moveCamera) then
 		camera:move(0, moveCameraAmount)
 	end
@@ -133,16 +150,16 @@ function displayScore()
 	love.graphics.print("currentHeight: "..currentHeight, scoreX, scoreY + 100)
 	love.graphics.print("cameraMiddle: "..cameraMiddle, scoreX, scoreY + 150)
 	love.graphics.print("cameraQuarter: "..cameraQuarter, scoreX, scoreY + 175)
-	love.graphics.print("bodyY: "..body:getY(), scoreX, scoreY + 200)
+	love.graphics.print("bodyY: "..spaceship.body:getY(), scoreX, scoreY + 200)
 
 	if rightOn then
-		local worldX, worldY = body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
+		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
 		love.graphics.circle("fill", worldX , worldY , 10, 100)
 	end
 	if leftOn then
-		local worldX, worldY = body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
+		local worldX, worldY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
 		love.graphics.circle("fill", worldX , worldY , 10, 100)
 	end
 
-	love.graphics.print("body angle: "..body:getAngle() * 180/math.pi, scoreX, scoreY + 250)
+	love.graphics.print("body angle: "..spaceship.body:getAngle() * 180/math.pi, scoreX, scoreY + 250)
 end
