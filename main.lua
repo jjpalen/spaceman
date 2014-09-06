@@ -37,6 +37,11 @@ local rocketforce = -5000
 local metersPerScreen
 
 local ground = {}
+
+function random99to101()
+	return (.99 + .02 * love.math.random())
+end
+
 function love.load()
 
 	spaceshipImage = love.graphics.newImage("assets/spaceship96x96.png")
@@ -55,15 +60,18 @@ function love.load()
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
 	local x,y,mass,inertia = spaceship.body:getMassData()
-	x = x + spaceshipImage:getHeight() / 4
-	--mass = mass * 5000
-	--inertia = inertia * 5000
-	spaceship.body:setMassData(x, y, mass, inertia)
+	x = x + spaceshipImage:getHeight() / 6
+	mass = mass * 50000000000
+	inertia = inertia * 50000000000
+	print (mass)
+	print (inertia)
+	--spaceship.body:setMassData(x, y, 100, 100)
 	spaceship.body:setAngularDamping(0.07)
 	spaceship.body:setLinearDamping(0.07)
 	spaceship.body:setAngle(-math.pi/2)
-	shape = love.physics.newRectangleShape(spaceshipImage:getDimensions())
-	fixture = love.physics.newFixture(spaceship.body, shape, 1) -- Attach fixture to body and give it a density of 1.
+	spaceship.shape = love.physics.newPolygonShape(48,0, -16,48, -32,48, -48,0, -32,-48, -16,-48)
+	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 1.7) -- Attach fixture to body and give it a density of 1.
+	print (spaceship.fixture:getMassData())
 
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
@@ -74,11 +82,11 @@ function love.load()
 	walls.leftBody = love.physics.newBody(world, 0, 0)
 	walls.leftShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
-	walls.leftFixture:setRestitution(0.9)
+	walls.leftFixture:setRestitution(0.85)
 	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
 	walls.rightShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
-	walls.rightFixture:setRestitution(0.9)
+	walls.rightFixture:setRestitution(0.85)
 
 	rightOn = false
 	leftOn = false
@@ -106,13 +114,17 @@ function love.update(dt)
 		leftOn = true
 		leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
-		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()), rocketforce * math.sin(spaceship.body:getAngle()), spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
+			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
+			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
 	if love.keyboard.isDown("right") then
 		rightOn = true
 		rightRocketOffsetX = -spaceshipImage:getWidth() * 1/2
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
-		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()), rocketforce * math.sin(spaceship.body:getAngle()), spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
+			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
+			spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY ))
 	end
 	if love.keyboard.isDown(" ") then
 		love.load()
@@ -159,7 +171,6 @@ function love.draw()
 	--love.graphics.draw(groundImage, 0, groundY)
 	--love.graphics.setColor(72, 160, 14) -- set the drawing color to green for the ground
   	love.graphics.polygon("fill", ground.body:getWorldPoints(ground.shape:getPoints())) -- draw a "filled in" polygon using the ground's coordinates
-	
 	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
 	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
 
