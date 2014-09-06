@@ -49,10 +49,22 @@ function love.load()
 	spaceship.body:setAngle(-math.pi/2)
 	shape = love.physics.newRectangleShape(spaceshipImage:getDimensions())
 	fixture = love.physics.newFixture(spaceship.body, shape, 1) -- Attach fixture to body and give it a density of 1.
+
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
 	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions())
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
+
+	walls = {}
+	walls.leftBody = love.physics.newBody(world, 0, 0)
+	walls.leftShape = love.physics.newRectangleShape(1,love.window:getHeight())
+	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
+	walls.leftFixture:setRestitution(0.9)
+	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
+	walls.rightShape = love.physics.newRectangleShape(1,love.window:getHeight())
+	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
+	walls.rightFixture:setRestitution(0.9)
+
 	rightOn = false
 	leftOn = false
 end
