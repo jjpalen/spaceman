@@ -146,9 +146,13 @@ function love.update(dt)
 		maxText = math.floor(maxHeight)
 		maxDisplay = maxDisplayRoot .. maxText
 	end
-	heightText = math.floor(currentHeight)
+	if currentHeight < 0 then
+		heightText = 0
+	else
+		heightText = math.floor(currentHeight)
+	end
 	heightDisplay = heightDisplayRoot .. heightText
-	if spaceship.body:getY() < cameraMiddle then
+	if spaceship.body:getY() < cameraMiddle  then
 		moveCamera = true
 		moveCameraAmount = spaceship.body:getY() - cameraMiddle --this is negative
 		cameraMiddle = cameraMiddle + moveCameraAmount
@@ -156,7 +160,7 @@ function love.update(dt)
 		heightY = heightY + moveCameraAmount
 		maxY = maxY + moveCameraAmount
 	end
-	if spaceship.body:getY() > cameraQuarter then
+	if spaceship.body:getY() > cameraQuarter and cameraMiddle < 300 then
 		moveCamera = true
 		moveCameraAmount = spaceship.body:getY() - cameraQuarter --this is positive
 		cameraMiddle = cameraMiddle + moveCameraAmount
