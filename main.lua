@@ -10,17 +10,19 @@ local moveCameraAmount = 0
 local cameraMiddle = love.graphics:getHeight() / 2
 local cameraQuarter = 3 * cameraMiddle / 2
 
-local scoreDisplayRoot = "Score: "
-local scoreDisplay = "Score: 0"
+local scoreDisplayRoot = "Height: "
+local scoreDisplay = scoreDisplayRoot .. "0"
 
 local startY
 local maxHeight = 0
 local currentHeight = 0
+local score = 0
 
 local scoreX = 50
 local scoreY = 50
 
 local rocketforce = -5000
+local metersPerScreen
 
 local ground = {}
 function love.load()
@@ -33,6 +35,7 @@ function love.load()
 	love.graphics.setBackgroundColor(126, 192, 238)
 
 	love.physics.setMeter(64)
+	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
 	world = love.physics.newWorld(0, 64*9.81*.75, true)
 	--world = love.physics.newWorld(0, 0, true)
 	rocketforce = 2300
@@ -55,6 +58,11 @@ function love.load()
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
 	rightOn = false
 	leftOn = false
+	maxHeight = 0
+	currentHeight = 0
+	score = 0
+	prevMark = {}
+	nextMark = {}
 end
 
 function love.update(dt)
@@ -78,11 +86,16 @@ function love.update(dt)
 		love.load()
 	end
 
+	previousLine = getPreviousLine()
+	--prevMark.body
+	nextLine = getNextLine()
+	cameraMiddleHeight = -cameraMiddle + 325
 	moveCamera = false
 	currentHeight = startY - spaceship.body:getY()
 	if currentHeight > maxHeight then
 		maxHeight = currentHeight
-		scoreDisplay = scoreDisplayRoot .. math.floor(maxHeight / 10)
+		score = math.floor(maxHeight)
+		scoreDisplay = scoreDisplayRoot .. score
 	end
 	if spaceship.body:getY() < cameraMiddle then
 		moveCamera = true
@@ -103,6 +116,8 @@ end
 
 function love.draw()
 	camera:set()
+	drawLine(previousLine)
+	drawLine(nextLine)
 	displayScore()
 	-- if current height below the first camera change
 	--love.graphics.draw(groundImage, 0, groundY)
@@ -135,6 +150,30 @@ function displayScore()
 		local worldX, worldY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
 		love.graphics.circle("fill", worldX , worldY , 10, 100)
 	end
+	love.graphics.print("prevline: "..previousLine, scoreX, scoreY + 225)
+	love.graphics.print("nextline: "..nextLine, scoreX, scoreY + 250)
+	love.graphics.print("cameraHeight "..-cameraMiddle + 325, scoreX, scoreY + 275)
+end
 
-	love.graphics.print("body angle: "..spaceship.body:getAngle() * 180/math.pi, scoreX, scoreY + 250)
+function getPreviousLine()
+	if currentHeight < 1000 then
+		return 0
+	end
+	return math.floor(currentHeight / 1000) * 1000
+end
+
+function getNextLine()
+	if currentHeight < 0 then
+		return 0
+	end
+	return math.ceil(currentHeight / 1000) * 1000
+end
+
+function drawLine(height)
+	--cameraMiddle +300, cameraMiddle - 300
+	if math.abs(cameraMiddleHeight - height) < love.window.getHeight()/2 then
+		local printHeight = cameraMiddle + cameraMiddleHeight - height
+		love.graphics.print(height, 25, printHeight)
+		love.graphics.line(50, printHeight, 700, printHeight)
+	end
 end
