@@ -28,9 +28,11 @@ function love.load()
 	spaceship = love.graphics.newImage("assets/spaceship96x96.png")
 	rocketTexture = love.graphics.newImage("assets/yellowtexture.png")
 	groundImage = love.graphics.newImage("assets/ground_0.png")
-	groundY = love.graphics:getHeight() - groundImage:getHeight()
+	groundY = love.window:getHeight() - groundImage:getHeight()
+	wallLeftX = 4
+	wallRightX = love.window:getWidth() - 4
 
-	love.graphics.setBackgroundColor(126, 192, 238)
+	--love.graphics.setBackgroundColor(126, 192, 238)
 
 	love.physics.setMeter(64)
 	world = love.physics.newWorld(0, 64*9.81*.75, true)
@@ -48,10 +50,22 @@ function love.load()
 	body:setAngle(-math.pi/2)
 	shape = love.physics.newRectangleShape(spaceship:getDimensions())
 	fixture = love.physics.newFixture(body, shape, 1) -- Attach fixture to body and give it a density of 1.
+
 	ground = {}
-	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
-	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions()) --make a rectangle with a width of 650 and a height of 50
+	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) 
+	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions())
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
+
+	walls = {}
+	walls.leftBody = love.physics.newBody(world, wallLeftX, love.window:getHeight()/2)
+	walls.leftShape = love.physics.newRectangleShape(8,love.window:getHeight())
+	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
+	walls.leftFixture:setRestitution(0.9)
+	walls.rightBody = love.physics.newBody(world, wallLeftX, love.window:getHeight()/2)
+	walls.rightShape = love.physics.newRectangleShape(8,love.window:getHeight())
+	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
+	walls.rightFixture:setRestitution(0.9)
+
 	rightOn = false
 	leftOn = false
 end
