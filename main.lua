@@ -3,6 +3,7 @@
 --
 
 local Vec2 = require "Vec2_ffi"
+require "camera"
 
 function love.load()
 
@@ -10,6 +11,10 @@ function love.load()
 	rocketTexture = love.graphics.newImage("assets/yellowtexture.png")
 	groundImage = love.graphics.newImage("assets/ground_0.png")
 	groundY = love.graphics:getHeight() - groundImage:getHeight()
+
+	cameraMiddle = love.graphics:getHeight() / 2
+	moveCamera = false
+	moveCameraAmount = 0
 
 	x = 350
 	y = 473
@@ -48,25 +53,41 @@ function love.update(dt)
 		body:applyForce(0, rocketforce)
 	end
 
+	moveCamera = false
 	currentHeight = startY - body:getY()
 	if currentHeight > maxHeight then
 		maxHeight = currentHeight
 		scoreDisplay = scoreDisplayRoot .. math.floor(maxHeight)
 	end
+	if body:getY() < cameraMiddle then
+		moveCamera = true
+		moveCameraAmount = body:getY() - cameraMiddle --this is negative
+		cameraMiddle = cameraMiddle + moveCameraAmount
+		scoreY = scoreY + moveCameraAmount
+	end
+
 end
 
 local v = Vec2(0.0, 3.0)
 local multiplied_v = v * 3
 
 function love.draw()
-   displayScore()
-   -- if current height below the first camera change
-   love.graphics.draw(groundImage, 0, groundY)
-   love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle(),1,1,spaceship:getDimensions() / 2)
+	camera:set()
+	displayScore()
+	if (moveCamera) then
+		camera:move(0, moveCameraAmount)
+	end
+	-- if current height below the first camera change
+	love.graphics.draw(groundImage, 0, groundY)
+	love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle(),1,1,spaceship:getDimensions() / 2)
+	camera:unset()
 end
 
 function displayScore()
 	love.graphics.print(scoreDisplay, scoreX, scoreY)
-	love.graphics.print("maxHeight: "..maxHeight, scoreX, scoreY + 100)
-	love.graphics.print("currentHeight: "..currentHeight, scoreX, scoreY + 200)
+	--debug
+	love.graphics.print("maxHeight: "..maxHeight, scoreX, scoreY + 50)
+	love.graphics.print("currentHeight: "..currentHeight, scoreX, scoreY + 100)
+	love.graphics.print("cameraMiddle: "..cameraMiddle, scoreX, scoreY + 150)
+	love.graphics.print("bodyY: "..body:getY(), scoreX, scoreY + 200)
 end
