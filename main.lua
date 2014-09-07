@@ -56,7 +56,7 @@ function love.load()
 
 	bgImage = love.graphics.newImage("assets/starry_night.gif")
 	bgImage:setWrap('repeat', 'repeat')
-	bg_canvas = love.graphics.newCanvas() -- for the creation of background
+	--bg_canvas = love.graphics.newCanvas() -- for the creation of background
 
 	love.graphics.setBackgroundColor(30, 0, 30)
 
@@ -113,6 +113,7 @@ function love.update(dt)
 	leftOn = false
 	rightOn = false
 	world:update(dt)
+	--drawBG()
 
 	walls.leftBody:setPosition(0, spaceship.body:getY())
 	walls.rightBody:setPosition(love.window:getWidth(), spaceship.body:getY())
@@ -174,16 +175,14 @@ function love.update(dt)
 		cameraQuarter = cameraQuarter + moveCameraAmount
 		heightY = heightY + moveCameraAmount
 		maxY = maxY + moveCameraAmount
-
-
 	end
 end
 
 function love.draw()
 	camera:set()
+	drawBG()
 	drawLine(previousLine)
 	drawLine(nextLine)
-	drawBG()
 	displayScore()
 	-- if current height below the first camera change
 	--love.graphics.draw(groundImage, 0, groundY)
@@ -254,10 +253,10 @@ function drawLine(height)
 	end
 end
 
-function drawBG() ---------------------------------------------------------------------------------
-	for x = 1, love.graphics:getWidth() do
-		for y = 1, love.graphics:getHeight() do
-			love.graphics.draw(bgImage, 0, 0)
+function drawBG() --------------------------------------------------------------------------------- TODO: layering?
+	for x = 0, love.graphics:getWidth(), bgImage:getWidth() do
+		for y = 0, love.graphics:getHeight(), bgImage:getHeight() do
+			love.graphics.draw(bgImage, x, y)
 		end
 	end
 end
@@ -279,13 +278,9 @@ function generateObstacles(n, m)
 	end
 end
 
-
-
 function drawObstacles(n)
 	for i = 1,n do
 		--print (obstacles[i].body:getMassData())
 		love.graphics.circle("fill", obstacles[i].body:getX(), obstacles[i].body:getY(), obstacles[i].radius, 100)
 	end
 end
-
-
