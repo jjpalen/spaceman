@@ -58,21 +58,20 @@ function love.load()
 
 	love.physics.setMeter(64)
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
-	world = love.physics.newWorld(0, 64*9.81*.72, true)
+	world = love.physics.newWorld(0, 64*7.5*.72, true)
 	--world = love.physics.newWorld(0, 0, true)
-	rocketforce = 2000
+	rocketforce = 1800
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
 	local x,y,mass,inertia = spaceship.body:getMassData()
 	x = x + spaceshipImage:getHeight() / 6
-	spaceship.body:setMassData(x, y, mass, inertia)
-	spaceship.body:setAngularDamping(0.07)
+	spaceship.body:setAngularDamping(0.2)
 	spaceship.body:setLinearDamping(0.07)
 	spaceship.body:setAngle(-math.pi/2 * random99to101()^6)
 	spaceship.body:setBullet(true)
 	spaceship.shape = love.physics.newPolygonShape(48,0, -16,48, -32,48, -48,0, -32,-48, -16,-48)
-	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 1.7) -- Attach fixture to body and give it a density of 1.
+	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 2) -- Attach fixture to body and give it a density of 1.
 
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
@@ -97,7 +96,7 @@ function love.load()
 	currentHeight = 0
 	score = 0
 
-	generateObstacles(nObstacles, 6)
+	generateObstacles(nObstacles, 9)
 	
 	heightDisplay = heightDisplayRoot .. currentHeight
 	love.graphics.print(heightDisplay, heightX, heightY)
@@ -115,15 +114,15 @@ function love.update(dt)
 
 	local xVelocity, yVelocity = spaceship.body:getLinearVelocity();
 	spaceship.body:applyForce(-resistanceCoeff * xVelocity * math.abs(xVelocity), 0)
-	if yVelocity < 0 then
-		spaceship.body:applyForce(0, resistanceCoeff * yVelocity^2)
-	end
+	--if yVelocity < 0 then
+		spaceship.body:applyForce(0, -resistanceCoeff * yVelocity * math.abs(yVelocity))
+	--end
 	if love.keyboard.isDown("left") then
 		leftOn = true
 		leftRocketOffsetX = -spaceshipImage:getWidth() * .4
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
-			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
+			rocketforce * math.sin(spaceship.body:getAngle()),
 			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
 	if love.keyboard.isDown("right") then
@@ -131,7 +130,7 @@ function love.update(dt)
 		rightRocketOffsetX = -spaceshipImage:getWidth() * .4
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
-			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
+			rocketforce * math.sin(spaceship.body:getAngle()),
 			spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY))
 	end
 	if love.keyboard.isDown(" ") then
@@ -228,17 +227,17 @@ function displayScore()
 end
 
 function getPreviousLine()
-	if currentHeight < 1000 then
+	if currentHeight < 500 then
 		return 0
 	end
-	return math.floor(currentHeight / 1000) * 1000
+	return math.floor(currentHeight / 500) * 500
 end
 
 function getNextLine()
 	if currentHeight < 0 then
 		return 0
 	end
-	return math.ceil(currentHeight / 1000) * 1000
+	return math.ceil(currentHeight / 500) * 500
 end
 
 function drawLine(height)
