@@ -54,6 +54,10 @@ function love.load()
 	groundImage = love.graphics.newImage("assets/ground_0.png")
 	groundY = love.graphics:getHeight() - groundImage:getHeight()
 
+	bgImage = love.graphics.newImage("assets/starry_night.gif")
+	bgImage:setWrap('repeat', 'repeat')
+	bg_canvas = love.graphics.newCanvas() -- for the creation of background
+
 	love.graphics.setBackgroundColor(30, 0, 30)
 
 	love.physics.setMeter(64)
@@ -179,6 +183,7 @@ function love.draw()
 	camera:set()
 	drawLine(previousLine)
 	drawLine(nextLine)
+	drawBG()
 	displayScore()
 	-- if current height below the first camera change
 	--love.graphics.draw(groundImage, 0, groundY)
@@ -246,6 +251,14 @@ function drawLine(height)
 		local printHeight = cameraMiddle + cameraMiddleHeight - height
 		love.graphics.print(height, 25, printHeight)
 		love.graphics.line(75, printHeight, love.window:getWidth() - 75, printHeight)
+	end
+end
+
+function drawBG() ---------------------------------------------------------------------------------
+	for x = 1, love.graphics:getWidth() do
+		for y = 1, love.graphics:getHeight() do
+			love.graphics.draw(bgImage, 0, 0)
+		end
 	end
 end
 
