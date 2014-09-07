@@ -42,7 +42,7 @@ local metersPerScreen
 
 local ground = {}
 
-local nObstacles = 8
+local nObstacles = 38
 obstacles = {}
 
 function random99to101()
@@ -62,18 +62,18 @@ function love.load()
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
 	world = love.physics.newWorld(0, 64*7.5*.72, true)
 	--world = love.physics.newWorld(0, 0, true)
-	rocketforce = 1800
+	rocketforce = 2200
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
 	local x,y,mass,inertia = spaceship.body:getMassData()
 	x = x + spaceshipImage:getHeight() / 6
-	spaceship.body:setAngularDamping(0.2)
+	spaceship.body:setAngularDamping(0.5)
 	spaceship.body:setLinearDamping(0.07)
 	spaceship.body:setAngle(-math.pi/2 * random99to101()^6)
 	spaceship.body:setBullet(true)
 	spaceship.shape = love.physics.newPolygonShape(48,0, -16,48, -32,48, -48,0, -32,-48, -16,-48)
-	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 2) -- Attach fixture to body and give it a density of 1.
+	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 2.5) -- Attach fixture to body and give it a density of 1.
 
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
@@ -297,12 +297,13 @@ function generateObstacles(n, m)
 		newObst.radius = 30 + math.random() * 40
 		newObst.x = 2*newObst.radius + math.random() * (love.window:getWidth() - 4*newObst.radius)
 		newObst.y = -math.random() * love.window:getHeight() * m
-		newObst.xVelocity = 2 * math.random() - 1
-		newObst.yVelocity = 2 * math.random() - 1
-		newObst.body = love.physics.newBody(world, newObst.x, newObst.y)
+		newObst.xVelocity = (2 * math.random() - 1) * 500
+		newObst.yVelocity = (2 * math.random() - 1) * 500
+		newObst.body = love.physics.newBody(world, newObst.x, newObst.y, "dynamic")
 		newObst.shape = love.physics.newCircleShape(newObst.radius)
-		newObst.fixture = love.physics.newFixture(newObst.body, newObst.shape, 100)
+		newObst.fixture = love.physics.newFixture(newObst.body, newObst.shape, 5)
 		newObst.body:setLinearVelocity(newObst.xVelocity, newObst.yVelocity)
+		newObst.body:setGravityScale(0)
 		newObst.fixture:setRestitution(.5)
 	end
 end
