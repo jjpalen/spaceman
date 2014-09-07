@@ -60,7 +60,7 @@ function love.load()
 
 	love.physics.setMeter(64)
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
-	world = love.physics.newWorld(0, 64*9.81*.60, true)
+	world = love.physics.newWorld(0, 64*7.5*.72, true)
 	--world = love.physics.newWorld(0, 0, true)
 	rocketforce = 1800
 	spaceship = {}
@@ -68,8 +68,7 @@ function love.load()
 	startY = spaceship.body:getY()
 	local x,y,mass,inertia = spaceship.body:getMassData()
 	x = x + spaceshipImage:getHeight() / 6
-	spaceship.body:setMassData(x, y, mass, inertia)
-	spaceship.body:setAngularDamping(0.12)
+	spaceship.body:setAngularDamping(0.2)
 	spaceship.body:setLinearDamping(0.07)
 	spaceship.body:setAngle(-math.pi/2 * random99to101()^6)
 	spaceship.body:setBullet(true)
@@ -106,6 +105,7 @@ function love.load()
 		gates[i].rightLength = love.window:getWidth() / 2 - gates[i].leftLength
 	end
 	--generateObstacles(nObstacles, 6)
+	generateObstacles(nObstacles, 9)
 	
 	heightDisplay = heightDisplayRoot .. currentHeight
 	love.graphics.print(heightDisplay, heightX, heightY)
@@ -123,15 +123,16 @@ function love.update(dt)
 
 	local xVelocity, yVelocity = spaceship.body:getLinearVelocity();
 	spaceship.body:applyForce(-resistanceCoeff * xVelocity * math.abs(xVelocity), 0)
-	if yVelocity < 0 then
-		spaceship.body:applyForce(0, resistanceCoeff * yVelocity^2)
-	end
+	--if yVelocity < 0 then
+		spaceship.body:applyForce(0, -resistanceCoeff * yVelocity * math.abs(yVelocity))
+	--end
 	if love.keyboard.isDown("left") then
 		leftOn = true
 		leftRocketOffsetX = -spaceshipImage:getWidth() * .4
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
-		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()),
-			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
+
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
+			rocketforce * math.sin(spaceship.body:getAngle()),
 			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
 	if love.keyboard.isDown("right") then
@@ -205,7 +206,7 @@ function love.draw()
 	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
 	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
 
-	--drawObstacles(nObstacles);
+	drawObstacles(nObstacles);
 
 	if rightOn then
 		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
