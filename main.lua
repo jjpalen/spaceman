@@ -40,7 +40,7 @@ local metersPerScreen
 
 local ground = {}
 
-local nObstacles
+local nObstacles = 8
 obstacles = {}
 
 function random99to101()
@@ -96,6 +96,8 @@ function love.load()
 	leftOn = false
 	currentHeight = 0
 	score = 0
+
+	generateObstacles(nObstacles, 4)
 	
 	heightDisplay = heightDisplayRoot .. currentHeight
 	love.graphics.print(heightDisplay, heightX, heightY)
@@ -184,6 +186,8 @@ function love.draw()
 	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
 	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
 
+	drawObstacles(nObstacles);
+
 	if rightOn then
 		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
 		love.graphics.circle("fill", worldX , worldY , 10, 100)
@@ -247,16 +251,22 @@ end
 function generateObstacles(n, m)
 	for i = 1,n do
 		obstacles[i] = {}
-		obstacles[i].radius = 30 + math.random() * 70
+		obstacles[i].radius = 30 + math.random() * 40
 		obstacles[i].x = math.random()*love.window:getWidth()
-		obstacles[i].y = math.random()*love.window:getHeight()*m
-		
+		obstacles[i].y = -math.random()*love.window:getHeight()*m
+		obstacles[i].xVelocity = 2 * math.random() - 1
+		obstacles[i].yVelocity = 2 * math.random() - 1
+
+		obstacles[i].body = love.physics.newBody(world, obstacles[i].x, obstacles[i].y)
+		obstacles[i].shape = love.physics.newCircleShape(obstacles[i].x, obstacles[i].y, obstacles[i].radius)
+		obstacles[i].fixture = love.physics.newFixture(obstacles[i].body, obstacles[i].shape, 100)
+		obstacles[i].fixture:setRestitution(.5)
 	end
 end
 
-function drawObstacles()
-	for i = 1,nObstacles do
-		love.graphics.circle("fill", obstacles[i].x , worldY , 0, 100)
+function drawObstacles(n)
+	for i = 1,n do
+		love.graphics.circle("fill", obstacles[i].x, obstacles[i].y, obstacles[i].radius, 100)
 	end
 end
 
