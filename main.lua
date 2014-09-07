@@ -117,7 +117,7 @@ function love.update(dt)
 	--if yVelocity < 0 then
 		spaceship.body:applyForce(0, -resistanceCoeff * yVelocity * math.abs(yVelocity))
 	--end
-	if love.keyboard.isDown("left") then
+	if love.keyboard.isDown("right") then
 		leftOn = true
 		leftRocketOffsetX = -spaceshipImage:getWidth() * .4
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
@@ -125,7 +125,7 @@ function love.update(dt)
 			rocketforce * math.sin(spaceship.body:getAngle()),
 			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
-	if love.keyboard.isDown("right") then
+	if love.keyboard.isDown("left") then
 		rightOn = true
 		rightRocketOffsetX = -spaceshipImage:getWidth() * .4
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
