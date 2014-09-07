@@ -22,7 +22,7 @@ local heightDisplay = heightDisplayRoot .. "0"
 local heightX = 50
 local heightY = 50
 
-local maxDisplayRoot = "Max: "
+local maxDisplayRoot = "Best: "
 local maxDisplay = maxDisplayRoot .. "0"
 
 local maxX = 50
@@ -40,6 +40,9 @@ local metersPerScreen
 
 local ground = {}
 
+local nObstacles
+obstacles = {}
+
 function random99to101()
 	return (.99 + .02 * love.math.random())
 end
@@ -55,9 +58,9 @@ function love.load()
 
 	love.physics.setMeter(64)
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
-	world = love.physics.newWorld(0, 64*9.81*.75, true)
+	world = love.physics.newWorld(0, 64*9.81*.67, true)
 	--world = love.physics.newWorld(0, 0, true)
-	rocketforce = 2000
+	rocketforce = 1500
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
@@ -75,18 +78,18 @@ function love.load()
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
 	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions())
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
-	ground.fixture:setRestitution(0.25)
+	ground.fixture:setRestitution(.25)
 
 	walls = {}
 	walls.leftBody = love.physics.newBody(world, 0, 0)
 	walls.leftShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
-	walls.leftFixture:setRestitution(0.9)
+	walls.leftFixture:setRestitution(.9)
 	walls.leftFixture:setFriction(1)
 	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
 	walls.rightShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
-	walls.rightFixture:setRestitution(0.9)
+	walls.rightFixture:setRestitution(.9)
 	walls.rightFixture:setFriction(1)
 
 	rightOn = false
@@ -98,7 +101,6 @@ function love.load()
 	love.graphics.print(heightDisplay, heightX, heightY)
 	maxDisplay = maxDisplayRoot .. math.floor(maxHeight)
 	love.graphics.print(maxDisplay, maxX, maxY)
-
 end
 
 function love.update(dt)
@@ -116,7 +118,7 @@ function love.update(dt)
 	end
 	if love.keyboard.isDown("left") then
 		leftOn = true
-		leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
+		leftRocketOffsetX = -spaceshipImage:getWidth() * .4
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
 			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
@@ -124,7 +126,7 @@ function love.update(dt)
 	end
 	if love.keyboard.isDown("right") then
 		rightOn = true
-		rightRocketOffsetX = -spaceshipImage:getWidth() * 1/2
+		rightRocketOffsetX = -spaceshipImage:getWidth() * .4
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
 			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
@@ -182,6 +184,15 @@ function love.draw()
 	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
 	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
 
+	if rightOn then
+		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
+		love.graphics.circle("fill", worldX , worldY , 10, 100)
+	end
+	if leftOn then
+		local worldX, worldY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
+		love.graphics.circle("fill", worldX , worldY , 10, 100)
+	end
+
 	if (moveCamera) then
 		camera:move(0, moveCameraAmount)
 	end
@@ -229,6 +240,24 @@ function drawLine(height)
 	if math.abs(cameraMiddleHeight - height) < love.window.getHeight()/2 then
 		local printHeight = cameraMiddle + cameraMiddleHeight - height
 		love.graphics.print(height, 25, printHeight)
-		love.graphics.line(50, printHeight, 700, printHeight)
+		love.graphics.line(75, printHeight, love.window:getWidth() - 75, printHeight)
 	end
 end
+
+function generateObstacles(n, m)
+	for i = 1,n do
+		obstacles[i] = {}
+		obstacles[i].radius = 30 + math.random() * 70
+		obstacles[i].x = math.random()*love.window:getWidth()
+		obstacles[i].y = math.random()*love.window:getHeight()*m
+		
+	end
+end
+
+function drawObstacles()
+	for i = 1,nObstacles do
+		love.graphics.circle("fill", obstacles[i].x , worldY , 0, 100)
+	end
+end
+
+
