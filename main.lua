@@ -47,6 +47,7 @@ end
 local leftX = 0
 local leftY = 0
 
+local leftSystem = {}
 function love.load()
 
 	spaceshipImage = love.graphics.newImage("assets/spaceship96x96.png")
@@ -94,9 +95,7 @@ function love.load()
 
 	rightOn = false
 	leftOn = false
-	maxHeight = 0
 	currentHeight = 0
-	score = 0
 	
 	heightDisplay = heightDisplayRoot .. "0"
 	love.graphics.print(heightDisplay, heightX, heightY)
@@ -105,7 +104,10 @@ function love.load()
 
 	leftSystem = love.graphics.newParticleSystem(rocketTexture, 200)
 	leftSystem:setParticleLifetime(.4,.5)
-	leftSystem:setEmissionRate(2)
+	leftSystem:setSpread(.7)
+	leftSystem:setSpeed(0,0)
+	leftSystem:setDirection(-1.5)
+	leftSystem:setEmissionRate(200)
 	leftSystem:setSizes(.05,.025)
 	leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
 	leftRocketOffsetY = -spaceshipImage:getHeight() / 4
@@ -118,7 +120,7 @@ function love.update(dt)
 	leftOn = false
 	rightOn = false
 	world:update(dt)
-	leftSystem:update(dt)
+
 	walls.leftBody:setPosition(0, spaceship.body:getY())
 	walls.rightBody:setPosition(love.window:getWidth(), spaceship.body:getY())
 
@@ -182,7 +184,7 @@ function love.update(dt)
 		heightY = heightY + moveCameraAmount
 		maxY = maxY + moveCameraAmount
 	end
-
+	leftSystem:update(dt)
 end
 
 function love.draw()
