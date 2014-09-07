@@ -42,7 +42,7 @@ local metersPerScreen
 
 local ground = {}
 
-local nObstacles = 15
+local nObstacles = 4
 obstacles = {}
 
 function random99to101()
@@ -105,8 +105,13 @@ function love.load()
 		gates[i].rightLength = love.window:getWidth() / 2 - gates[i].leftLength
 	end
 	--generateObstacles(nObstacles, 6)
-	generateObstacles(nObstacles, 9)
 	
+	for height = 1600,160000,1600 do
+		local n = math.ceil(2*height/1600)
+		generateObstacles(nObstacles, n, 4, height)
+		nObstacles = nObstacles + n
+	end
+
 	heightDisplay = heightDisplayRoot .. currentHeight
 	love.graphics.print(heightDisplay, heightX, heightY)
 	maxDisplay = maxDisplayRoot .. math.floor(maxHeight)
@@ -206,7 +211,7 @@ function love.draw()
 	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
 	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
 
-	drawObstacles(nObstacles);
+	drawObstacles();
 
 	if rightOn then
 		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
@@ -290,15 +295,15 @@ function addGate(height, leftLength, rightLength)
 	end
 end
 
-function generateObstacles(n, m)
-	for i = 1,n do
+function generateObstacles(start, n, m, height)
+	for i = start+1,start+n do
 		obstacles[i] = {}
 		local newObst = obstacles[i]
 		newObst.radius = 30 + math.random() * 40
 		newObst.x = 2*newObst.radius + math.random() * (love.window:getWidth() - 4*newObst.radius)
-		newObst.y = -math.random() * love.window:getHeight() * m
+		newObst.y = -(2*math.random()-1) * love.window:getHeight() * m - height
 		newObst.xVelocity = (2 * math.random() - 1) * 500
-		newObst.yVelocity = (2 * math.random() - 1) * 500
+		newObst.yVelocity = (2 * math.random() - 1) * 200
 		newObst.body = love.physics.newBody(world, newObst.x, newObst.y, "dynamic")
 		newObst.shape = love.physics.newCircleShape(newObst.radius)
 		newObst.fixture = love.physics.newFixture(newObst.body, newObst.shape, 5)
@@ -310,9 +315,8 @@ end
 
 
 
-function drawObstacles(n)
-	for i = 1,n do
-		--print (obstacles[i].body:getMassData())
+function drawObstacles()
+	for i = 1,100 do
 		love.graphics.circle("fill", obstacles[i].body:getX(), obstacles[i].body:getY(), obstacles[i].radius, 100)
 	end
 end
