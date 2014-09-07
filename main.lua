@@ -42,7 +42,7 @@ local metersPerScreen
 
 local ground = {}
 
-local nObstacles = 38
+local nObstacles = 15
 obstacles = {}
 
 function random99to101()
@@ -62,7 +62,7 @@ function love.load()
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
 	world = love.physics.newWorld(0, 64*7.5*.72, true)
 	--world = love.physics.newWorld(0, 0, true)
-	rocketforce = 2200
+	rocketforce = 2000
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
@@ -73,7 +73,7 @@ function love.load()
 	spaceship.body:setAngle(-math.pi/2 * random99to101()^6)
 	spaceship.body:setBullet(true)
 	spaceship.shape = love.physics.newPolygonShape(48,0, -16,48, -32,48, -48,0, -32,-48, -16,-48)
-	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 2.5) -- Attach fixture to body and give it a density of 1.
+	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 2) -- Attach fixture to body and give it a density of 1.
 
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
