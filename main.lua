@@ -94,13 +94,12 @@ function love.load()
 
 	rightOn = false
 	leftOn = false
-	maxHeight = 0
 	currentHeight = 0
 	score = 0
 	
-	heightDisplay = heightDisplayRoot .. "0"
+	heightDisplay = heightDisplayRoot .. currentHeight
 	love.graphics.print(heightDisplay, heightX, heightY)
-	maxDisplay = maxDisplayRoot .. "0"
+	maxDisplay = maxDisplayRoot .. math.floor(maxHeight)
 	love.graphics.print(maxDisplay, maxX, maxY)
 end
 
