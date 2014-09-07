@@ -42,9 +42,6 @@ local metersPerScreen
 
 local ground = {}
 
-local nObstacles = 4
-obstacles = {}
-
 function random99to101()
 	return (.99 + .02 * love.math.random())
 end
@@ -83,12 +80,12 @@ function love.load()
 
 	walls = {}
 	walls.leftBody = love.physics.newBody(world, 0, 0)
-	walls.leftShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
+	walls.leftShape = love.physics.newRectangleShape(1,400 * love.window:getHeight())
 	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
 	walls.leftFixture:setRestitution(.8)
 	walls.leftFixture:setFriction(1)
 	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
-	walls.rightShape = love.physics.newRectangleShape(1, 4 * love.window:getHeight())
+	walls.rightShape = love.physics.newRectangleShape(1, 400 * love.window:getHeight())
 	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
 	walls.rightFixture:setRestitution(.8)
 	walls.rightFixture:setFriction(1)
@@ -106,9 +103,12 @@ function love.load()
 	end
 	--generateObstacles(nObstacles, 6)
 	
-	for height = 1600,160000,1600 do
-		local n = math.ceil(2*height/1600)
-		generateObstacles(nObstacles, n, 4, height)
+	nObstacles = 0
+	obstacles = {}
+	for height = 400,32000,800 do
+		local n = math.ceil(2*height/6400)
+		--print (n, height)
+		generateObstacles(nObstacles, n, 2, height)
 		nObstacles = nObstacles + n
 	end
 
@@ -210,8 +210,9 @@ function love.draw()
   	love.graphics.polygon("fill", ground.body:getWorldPoints(ground.shape:getPoints())) -- draw a "filled in" polygon using the ground's coordinates
 	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
 	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
-
-	drawObstacles();
+	print ("ship", spaceship.body:getX(), spaceship.body:getY())
+	
+	drawObstacles(nObstacles);
 
 	if rightOn then
 		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
@@ -298,26 +299,28 @@ end
 function generateObstacles(start, n, m, height)
 	for i = start+1,start+n do
 		obstacles[i] = {}
-		local newObst = obstacles[i]
-		newObst.radius = 30 + math.random() * 40
-		newObst.x = 2*newObst.radius + math.random() * (love.window:getWidth() - 4*newObst.radius)
-		newObst.y = -(2*math.random()-1) * love.window:getHeight() * m - height
-		newObst.xVelocity = (2 * math.random() - 1) * 500
-		newObst.yVelocity = (2 * math.random() - 1) * 200
-		newObst.body = love.physics.newBody(world, newObst.x, newObst.y, "dynamic")
-		newObst.shape = love.physics.newCircleShape(newObst.radius)
-		newObst.fixture = love.physics.newFixture(newObst.body, newObst.shape, 5)
-		newObst.body:setLinearVelocity(newObst.xVelocity, newObst.yVelocity)
-		newObst.body:setGravityScale(0)
-		newObst.fixture:setRestitution(.5)
+		local obst = obstacles[i]
+		obst.radius = 30 + math.random() * 30
+		obst.x = 2*obst.radius + math.random() * (love.window:getWidth() - 4*obst.radius)
+		obst.y = -math.random() * love.window:getHeight() * m - height
+		--print (obst.y)
+		obst.xVelocity = (2 * math.random() - 1) * 500
+		obst.yVelocity = (2 * math.random() - 1) * 200
+		obst.body = love.physics.newBody(world, obst.x, obst.y, "dynamic")
+		obst.shape = love.physics.newCircleShape(obst.radius)
+		obst.fixture = love.physics.newFixture(obst.body, obst.shape, 5)
+		obst.body:setLinearVelocity(obst.xVelocity, obst.yVelocity)
+		obst.body:setGravityScale(0)
+		obst.fixture:setRestitution(.5)
 	end
 end
 
-
-
-function drawObstacles()
-	for i = 1,100 do
-		love.graphics.circle("fill", obstacles[i].body:getX(), obstacles[i].body:getY(), obstacles[i].radius, 100)
+function drawObstacles(n)
+	for i = 1,n do
+		if math.abs(obstacles[i].body:getY() - spaceship.body:getY()) < 1000 then
+			print ("obstacles", i, obstacles[i].body:getX(), obstacles[i].body:getY(), obstacles[i].radius)
+			love.graphics.circle("fill", obstacles[i].body:getX(), obstacles[i].body:getY(), obstacles[i].radius, 100)
+		end
 	end
 end
 
