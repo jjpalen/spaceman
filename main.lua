@@ -44,6 +44,9 @@ function random99to101()
 	return (.99 + .02 * love.math.random())
 end
 
+local leftX = 0
+local leftY = 0
+
 function love.load()
 
 	spaceshipImage = love.graphics.newImage("assets/spaceship96x96.png")
@@ -100,13 +103,22 @@ function love.load()
 	maxDisplay = maxDisplayRoot .. "0"
 	love.graphics.print(maxDisplay, maxX, maxY)
 
+	leftSystem = love.graphics.newParticleSystem(rocketTexture, 200)
+	leftSystem:setParticleLifetime(.4,.5)
+	leftSystem:setEmissionRate(2)
+	leftSystem:setSizes(.05,.025)
+	leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
+	leftRocketOffsetY = -spaceshipImage:getHeight() / 4
+	rightRocketOffsetX = -spaceshipImage:getWidth() * 1/2
+	rightRocketOffsetY = spaceshipImage:getHeight() / 4
+
 end
 
 function love.update(dt)
 	leftOn = false
 	rightOn = false
 	world:update(dt)
-
+	leftSystem:update(dt)
 	walls.leftBody:setPosition(0, spaceship.body:getY())
 	walls.rightBody:setPosition(love.window:getWidth(), spaceship.body:getY())
 
@@ -117,19 +129,21 @@ function love.update(dt)
 	end
 	if love.keyboard.isDown("left") then
 		leftOn = true
-		leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
-		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
 			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
 			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
+		leftX, leftY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
+		leftSystem:setPosition(leftX/64, leftY/64)
+		leftSystem:start()
+	else
+		leftSystem:stop()
 	end
 	if love.keyboard.isDown("right") then
 		rightOn = true
-		rightRocketOffsetX = -spaceshipImage:getWidth() * 1/2
-		rightRocketOffsetY = spaceshipImage:getHeight() / 4
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
 			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
 			spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY))
+		rightX, rightY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
 	end
 	if love.keyboard.isDown(" ") then
 		love.load()
@@ -193,23 +207,24 @@ function displayScore()
 	love.graphics.print(heightDisplay, heightX, heightY)
 	love.graphics.print(maxDisplay, maxX, maxY)
 	--debug
-	-- love.graphics.print("maxHeight: "..maxHeight, maxX, maxY + 50)
-	-- love.graphics.print("currentHeight: "..currentHeight, maxX, maxY + 100)
-	-- love.graphics.print("cameraMiddle: "..cameraMiddle, maxX, maxY + 150)
-	-- love.graphics.print("cameraQuarter: "..cameraQuarter, maxX, maxY + 175)
-	-- love.graphics.print("bodyY: "..spaceship.body:getY(), maxX, maxY + 200)
+	love.graphics.print("leftX: "..leftX, maxX, maxY + 50)
+	love.graphics.print("leftY: "..leftY, maxX, maxY + 75)
+	love.graphics.print("count: "..leftSystem:getCount(), maxX, maxY + 100)
+	actualX, actualY = leftSystem:getPosition()
+	love.graphics.print("actualX: "..actualX, maxX, maxY + 175)
+	love.graphics.print("actualY: "..actualY, maxX, maxY + 200)
 
 	if rightOn then
-		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
-		love.graphics.circle("fill", worldX , worldY , 10, 100)
+		love.graphics.circle("fill", rightX , rightY , 10, 100)
 	end
 	if leftOn then
-		local worldX, worldY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
-		love.graphics.circle("fill", worldX , worldY , 10, 100)
+
+		love.graphics.circle("fill", leftX , leftY , 10, 100)
 	end
 	-- love.graphics.print("prevline: "..previousLine, maxX, maxY + 225)
 	-- love.graphics.print("nextline: "..nextLine, maxX, maxY + 250)
 	-- love.graphics.print("cameraHeight "..-cameraMiddle + 325, maxX, maxY + 275)
+	love.graphics.draw(leftSystem, leftX, leftY)
 end
 
 function getPreviousLine()
