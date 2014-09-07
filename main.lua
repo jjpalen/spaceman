@@ -39,15 +39,19 @@ local rocketforce = -5000
 local metersPerScreen
 
 local ground = {}
+----------------------------------------------------------------------global pemit initializations
+local pemit = {}
+local l_pemit = {}
+local r_pemit = {}
 
 function random99to101()
 	return (.99 + .02 * love.math.random())
+	--return 1
 end
 
 local leftX = 0
 local leftY = 0
 
-local leftSystem = {}
 function love.load()
 
 	spaceshipImage = love.graphics.newImage("assets/spaceship96x96.png")
@@ -95,20 +99,19 @@ function love.load()
 
 	rightOn = false
 	leftOn = false
+	maxHeight = 0
 	currentHeight = 0
+	score = 0
 	
 	heightDisplay = heightDisplayRoot .. "0"
 	love.graphics.print(heightDisplay, heightX, heightY)
 	maxDisplay = maxDisplayRoot .. "0"
 	love.graphics.print(maxDisplay, maxX, maxY)
 
-	leftSystem = love.graphics.newParticleSystem(rocketTexture, 200)
-	leftSystem:setParticleLifetime(.4,.5)
-	leftSystem:setSpread(.7)
-	leftSystem:setSpeed(0,0)
-	leftSystem:setDirection(-1.5)
-	leftSystem:setEmissionRate(200)
-	leftSystem:setSizes(.05,.025)
+	---------------------------------------------------------------- Initialization of pemit
+	pemit = create_pemit(spaceship.body:getX() / 64, spaceship.body:getY() / 64, spaceship.body:getAngle())
+	pemit:start()
+	
 	leftRocketOffsetX = -spaceshipImage:getWidth() * 1/2
 	leftRocketOffsetY = -spaceshipImage:getHeight() / 4
 	rightRocketOffsetX = -spaceshipImage:getWidth() * 1/2
@@ -120,7 +123,7 @@ function love.update(dt)
 	leftOn = false
 	rightOn = false
 	world:update(dt)
-
+	------------------------------------------------------------------ leftSystem:update(dt) -- Update pemit
 	walls.leftBody:setPosition(0, spaceship.body:getY())
 	walls.rightBody:setPosition(love.window:getWidth(), spaceship.body:getY())
 
@@ -135,10 +138,10 @@ function love.update(dt)
 			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
 			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 		leftX, leftY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
-		leftSystem:setPosition(leftX/64, leftY/64)
-		leftSystem:start()
+		------------------------------------------------------------------ leftSystem:setPosition(leftX/64, leftY/64)
+		------------------------------------------------------------------ leftSystem:start()
 	else
-		leftSystem:stop()
+		------------------------------------------------------------------ leftSystem:stop()
 	end
 	if love.keyboard.isDown("right") then
 		rightOn = true
@@ -150,6 +153,17 @@ function love.update(dt)
 	if love.keyboard.isDown(" ") then
 		love.load()
 	end
+
+	----------------------------------------------- Update pemit
+	pemit:setPosition(spaceship.body:getX(), spaceship.body:getY())
+	pemit:setDirection(-spaceship.body:getAngle())
+	if leftOn or rightOn then
+		pemit:start()
+	else
+		pemit:stop()
+	end
+	pemit:update(dt)
+	-----------------------------------------------
 
 	previousLine = getPreviousLine()
 	nextLine = getNextLine()
@@ -184,7 +198,7 @@ function love.update(dt)
 		heightY = heightY + moveCameraAmount
 		maxY = maxY + moveCameraAmount
 	end
-	leftSystem:update(dt)
+
 end
 
 function love.draw()
@@ -211,22 +225,23 @@ function displayScore()
 	--debug
 	love.graphics.print("leftX: "..leftX, maxX, maxY + 50)
 	love.graphics.print("leftY: "..leftY, maxX, maxY + 75)
-	love.graphics.print("count: "..leftSystem:getCount(), maxX, maxY + 100)
-	actualX, actualY = leftSystem:getPosition()
-	love.graphics.print("actualX: "..actualX, maxX, maxY + 175)
-	love.graphics.print("actualY: "..actualY, maxX, maxY + 200)
+	------------------------------------------------------------------ love.graphics.print("count: "..leftSystem:getCount(), maxX, maxY + 100)
+	------------------------------------------------------------------ actualX, actualY = leftSystem:getPosition()
+	------------------------------------------------------------------ love.graphics.print("actualX: "..actualX, maxX, maxY + 175)
+	------------------------------------------------------------------ love.graphics.print("actualY: "..actualY, maxX, maxY + 200)
 
 	if rightOn then
 		love.graphics.circle("fill", rightX , rightY , 10, 100)
 	end
 	if leftOn then
-
 		love.graphics.circle("fill", leftX , leftY , 10, 100)
 	end
+
+	love.graphics.draw(pemit, spaceship.body:getPosition() / 64)
 	-- love.graphics.print("prevline: "..previousLine, maxX, maxY + 225)
 	-- love.graphics.print("nextline: "..nextLine, maxX, maxY + 250)
 	-- love.graphics.print("cameraHeight "..-cameraMiddle + 325, maxX, maxY + 275)
-	love.graphics.draw(leftSystem, leftX, leftY)
+	------------------------------------------------------------------------------ love.graphics.draw(leftSystem, leftX, leftY)
 end
 
 function getPreviousLine()
@@ -249,4 +264,22 @@ function drawLine(height)
 		love.graphics.print(height, 25, printHeight)
 		love.graphics.line(50, printHeight, 700, printHeight)
 	end
+end
+
+function create_pemit(x, y, angle) 
+	p_img = love.graphics.newImage("assets/particle.png")
+	pemit = love.graphics.newParticleSystem(p_img, 200)
+	pemit:setPosition(x, y)
+	pemit:setDirection(angle)
+	pemit:setSpread(.7)
+	pemit:setSpeed(0, 0)
+	pemit:setSizes(.1, 3)
+	pemit:setSizeVariation(.3)
+	pemit:setRotation              (0)
+  	pemit:setSpin                  (.5)
+  	pemit:setSpinVariation         (.4)
+	pemit:setParticleLifetime(.5)
+	pemit:setEmissionRate(25)
+	pemit:stop()
+	return pemit
 end
