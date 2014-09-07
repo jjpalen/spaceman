@@ -58,9 +58,9 @@ function love.load()
 
 	love.physics.setMeter(64)
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
-	world = love.physics.newWorld(0, 64*9.81*.67, true)
+	world = love.physics.newWorld(0, 64*9.81*.72, true)
 	--world = love.physics.newWorld(0, 0, true)
-	rocketforce = 1500
+	rocketforce = 2000
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
@@ -84,12 +84,12 @@ function love.load()
 	walls.leftBody = love.physics.newBody(world, 0, 0)
 	walls.leftShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
-	walls.leftFixture:setRestitution(.9)
+	walls.leftFixture:setRestitution(.8)
 	walls.leftFixture:setFriction(1)
 	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
 	walls.rightShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
 	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
-	walls.rightFixture:setRestitution(.9)
+	walls.rightFixture:setRestitution(.8)
 	walls.rightFixture:setFriction(1)
 
 	rightOn = false
