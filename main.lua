@@ -33,6 +33,8 @@ local maxHeight = 0
 local currentHeight = 0
 local score = 0
 
+local indicatorY = 15
+
 local resistanceCoeff = 0.001
 
 local rocketforce = -5000
@@ -58,21 +60,21 @@ function love.load()
 
 	love.physics.setMeter(64)
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
-	world = love.physics.newWorld(0, 64*9.81*.72, true)
+	world = love.physics.newWorld(0, 64*9.81*.60, true)
 	--world = love.physics.newWorld(0, 0, true)
-	rocketforce = 2000
+	rocketforce = 1800
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
 	local x,y,mass,inertia = spaceship.body:getMassData()
 	x = x + spaceshipImage:getHeight() / 6
 	spaceship.body:setMassData(x, y, mass, inertia)
-	spaceship.body:setAngularDamping(0.07)
+	spaceship.body:setAngularDamping(0.12)
 	spaceship.body:setLinearDamping(0.07)
 	spaceship.body:setAngle(-math.pi/2 * random99to101()^6)
 	spaceship.body:setBullet(true)
 	spaceship.shape = love.physics.newPolygonShape(48,0, -16,48, -32,48, -48,0, -32,-48, -16,-48)
-	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 1.7) -- Attach fixture to body and give it a density of 1.
+	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 2) -- Attach fixture to body and give it a density of 1.
 
 	ground = {}
 	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
@@ -97,7 +99,13 @@ function love.load()
 	currentHeight = 0
 	score = 0
 
-	generateObstacles(nObstacles, 6)
+	gates = {}
+	for i = 1,1000 do
+		gates[i] = {}
+		gates[i].leftLength = math.random() * love.window:getWidth() / 2
+		gates[i].rightLength = love.window:getWidth() / 2 - gates[i].leftLength
+	end
+	--generateObstacles(nObstacles, 6)
 	
 	heightDisplay = heightDisplayRoot .. currentHeight
 	love.graphics.print(heightDisplay, heightX, heightY)
@@ -122,7 +130,7 @@ function love.update(dt)
 		leftOn = true
 		leftRocketOffsetX = -spaceshipImage:getWidth() * .4
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
-		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()),
 			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
 			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
@@ -130,8 +138,8 @@ function love.update(dt)
 		rightOn = true
 		rightRocketOffsetX = -spaceshipImage:getWidth() * .4
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
-		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()) * random99to101(),
-			rocketforce * math.sin(spaceship.body:getAngle()) * random99to101(),
+		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()),
+			rocketforce * math.sin(spaceship.body:getAngle()),
 			spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY))
 	end
 	if love.keyboard.isDown(" ") then
@@ -162,6 +170,7 @@ function love.update(dt)
 		cameraQuarter = cameraQuarter + moveCameraAmount
 		heightY = heightY + moveCameraAmount
 		maxY = maxY + moveCameraAmount
+		indicatorY = indicatorY + moveCameraAmount
 	end
 	if spaceship.body:getY() > cameraQuarter and cameraMiddle < 300 then
 		moveCamera = true
@@ -170,15 +179,24 @@ function love.update(dt)
 		cameraQuarter = cameraQuarter + moveCameraAmount
 		heightY = heightY + moveCameraAmount
 		maxY = maxY + moveCameraAmount
-
+		indicatorY = indicatorY + moveCameraAmount
 
 	end
 end
 
 function love.draw()
 	camera:set()
-	drawLine(previousLine)
-	drawLine(nextLine)
+
+	local i = previousLine / 1000 + 1
+	local j = nextLine / 1000 + 1
+	if i > 1 then
+		addGate(previousLine, gates[i].leftLength, gates[i].rightLength)
+	end
+	if j > 1 then
+		addGate(nextLine, gates[j].leftLength, gates[j].rightLength)
+		drawIndicator(gates[j].leftLength + love.window:getWidth() / 4)
+	end
+
 	displayScore()
 	-- if current height below the first camera change
 	--love.graphics.draw(groundImage, 0, groundY)
@@ -187,7 +205,7 @@ function love.draw()
 	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
 	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
 
-	drawObstacles(nObstacles);
+	--drawObstacles(nObstacles);
 
 	if rightOn then
 		local worldX, worldY = spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY)
@@ -228,24 +246,46 @@ function displayScore()
 end
 
 function getPreviousLine()
-	if currentHeight < 1000 then
-		return 0
-	end
 	return math.floor(currentHeight / 1000) * 1000
 end
 
 function getNextLine()
-	if currentHeight < 0 then
-		return 0
-	end
 	return math.ceil(currentHeight / 1000) * 1000
 end
 
-function drawLine(height)
+function drawLines(center, h)
+	for height = h - 1000, h, 100 do
+		if math.abs(cameraMiddleHeight - height) < love.window.getHeight()/2 then
+			local printHeight = cameraMiddle + cameraMiddleHeight - height
+			love.graphics.line(center - 10, printHeight, center + 10, printHeight)
+		end
+	end
+end
+
+function drawIndicator(center)
+	love.graphics.polygon("line", center, indicatorY, center - 5, indicatorY + 5, center + 5, indicatorY + 5)
+end
+
+function addGate(height, leftLength, rightLength)
 	if math.abs(cameraMiddleHeight - height) < love.window.getHeight()/2 then
 		local printHeight = cameraMiddle + cameraMiddleHeight - height
-		love.graphics.print(height, 25, printHeight)
-		love.graphics.line(75, printHeight, love.window:getWidth() - 75, printHeight)
+		leftGate = {}
+		rightGate = {}
+		leftGate.body = love.physics.newBody(world, leftLength / 2, printHeight)
+		leftGate.shape = love.physics.newRectangleShape(leftLength, 20)
+		leftGate.fixture = love.physics.newFixture(leftGate.body, leftGate.shape)
+		leftGate.fixture:setRestitution(.5)
+		leftGate.fixture:setFriction(1)
+		rightGate.body = love.physics.newBody(world, love.window:getWidth() - rightLength / 2, printHeight)
+		rightGate.shape = love.physics.newRectangleShape(rightLength, 20)
+		rightGate.fixture = love.physics.newFixture(rightGate.body, rightGate.shape)
+		rightGate.fixture:setRestitution(.5)
+		rightGate.fixture:setFriction(1)
+
+		love.graphics.polygon("fill", leftGate.body:getWorldPoints(leftGate.shape:getPoints()))
+		love.graphics.polygon("fill", rightGate.body:getWorldPoints(rightGate.shape:getPoints()))
+		--love.graphics.rectangle("fill", 0, printHeight-10, leftLength, 20)
+		--love.graphics.rectangle("fill", love.window:getWidth()-rightLength, printHeight-10, rightLength, 20)
 	end
 end
 
