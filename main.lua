@@ -51,7 +51,7 @@ function love.load()
 
 	spaceshipImage = love.graphics.newImage("assets/spaceship96x96.png")
 	rocketTexture = love.graphics.newImage("assets/yellowtexture.png")
-	groundImage = love.graphics.newImage("assets/ground_0.png")
+	groundImage = love.graphics.newImage("assets/groundtile.png")
 	groundY = love.graphics:getHeight() - groundImage:getHeight()
 
 	bgImage = love.graphics.newImage("assets/starry_night.gif")
@@ -183,11 +183,12 @@ function love.draw()
 	drawBG()
 	drawLine(previousLine)
 	drawLine(nextLine)
+	love.graphics.draw(groundImage, ground.body:getX() / 64 - 6, ground.body:getY() / 64 + 520) -- drawing ground
 	displayScore()
 	-- if current height below the first camera change
-	--love.graphics.draw(groundImage, 0, groundY)
+	-- love.graphics.draw(groundImage, 0, groundY)
 	--love.graphics.setColor(72, 160, 14) -- set the drawing color to green for the ground
-  	love.graphics.polygon("fill", ground.body:getWorldPoints(ground.shape:getPoints())) -- draw a "filled in" polygon using the ground's coordinates
+  	--love.graphics.polygon("fill", ground.body:getWorldPoints(ground.shape:getPoints())) -- draw a "filled in" polygon using the ground's coordinates
 	--love.graphics.draw(spaceship,body:getX(),body:getY(),body:getAngle() + math.pi/2,1,1,spaceship:getDimensions() / 2)
 	love.graphics.draw(spaceshipImage,spaceship.body:getX(),spaceship.body:getY(),spaceship.body:getAngle() + math.pi/2,1,1,spaceshipImage:getWidth()/2,spaceshipImage:getHeight()/2)
 
@@ -248,7 +249,7 @@ end
 function drawLine(height)
 	if math.abs(cameraMiddleHeight - height) < love.window.getHeight()/2 then
 		local printHeight = cameraMiddle + cameraMiddleHeight - height
-		love.graphics.print(height, 25, printHeight)
+		love.graphics.print(height, 25, printHeight - 7) -- 7 is the offset to center it better
 		love.graphics.line(75, printHeight, love.window:getWidth() - 75, printHeight)
 	end
 end
