@@ -87,7 +87,7 @@ function love.load()
 	walls.leftFixture:setRestitution(.8)
 	walls.leftFixture:setFriction(1)
 	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
-	walls.rightShape = love.physics.newRectangleShape(1,4 * love.window:getHeight())
+	walls.rightShape = love.physics.newRectangleShape(1, 4 * love.window:getHeight())
 	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
 	walls.rightFixture:setRestitution(.8)
 	walls.rightFixture:setFriction(1)
@@ -97,7 +97,7 @@ function love.load()
 	currentHeight = 0
 	score = 0
 
-	generateObstacles(nObstacles, 4)
+	generateObstacles(nObstacles, 6)
 	
 	heightDisplay = heightDisplayRoot .. currentHeight
 	love.graphics.print(heightDisplay, heightX, heightY)
@@ -170,8 +170,9 @@ function love.update(dt)
 		cameraQuarter = cameraQuarter + moveCameraAmount
 		heightY = heightY + moveCameraAmount
 		maxY = maxY + moveCameraAmount
-	end
 
+
+	end
 end
 
 function love.draw()
@@ -251,22 +252,26 @@ end
 function generateObstacles(n, m)
 	for i = 1,n do
 		obstacles[i] = {}
-		obstacles[i].radius = 30 + math.random() * 40
-		obstacles[i].x = math.random()*love.window:getWidth()
-		obstacles[i].y = -math.random()*love.window:getHeight()*m
-		obstacles[i].xVelocity = 2 * math.random() - 1
-		obstacles[i].yVelocity = 2 * math.random() - 1
-
-		obstacles[i].body = love.physics.newBody(world, obstacles[i].x, obstacles[i].y)
-		obstacles[i].shape = love.physics.newCircleShape(obstacles[i].x, obstacles[i].y, obstacles[i].radius)
-		obstacles[i].fixture = love.physics.newFixture(obstacles[i].body, obstacles[i].shape, 100)
-		obstacles[i].fixture:setRestitution(.5)
+		local newObst = obstacles[i]
+		newObst.radius = 30 + math.random() * 40
+		newObst.x = 2*newObst.radius + math.random() * (love.window:getWidth() - 4*newObst.radius)
+		newObst.y = -math.random() * love.window:getHeight() * m
+		newObst.xVelocity = 2 * math.random() - 1
+		newObst.yVelocity = 2 * math.random() - 1
+		newObst.body = love.physics.newBody(world, newObst.x, newObst.y)
+		newObst.shape = love.physics.newCircleShape(newObst.radius)
+		newObst.fixture = love.physics.newFixture(newObst.body, newObst.shape, 100)
+		newObst.body:setLinearVelocity(newObst.xVelocity, newObst.yVelocity)
+		newObst.fixture:setRestitution(.5)
 	end
 end
 
+
+
 function drawObstacles(n)
 	for i = 1,n do
-		love.graphics.circle("fill", obstacles[i].x, obstacles[i].y, obstacles[i].radius, 100)
+		--print (obstacles[i].body:getMassData())
+		love.graphics.circle("fill", obstacles[i].body:getX(), obstacles[i].body:getY(), obstacles[i].radius, 100)
 	end
 end
 
