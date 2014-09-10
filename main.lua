@@ -40,6 +40,8 @@ local resistanceCoeff = 0.001
 local rocketforce = -5000
 local metersPerScreen
 
+local invertedControls = true
+
 local ground = {}
 
 function random99to101()
@@ -131,7 +133,8 @@ function love.update(dt)
 	--if yVelocity < 0 then
 		spaceship.body:applyForce(0, -resistanceCoeff * yVelocity * math.abs(yVelocity))
 	--end
-	if love.keyboard.isDown("left") then
+	if (love.keyboard.isDown("right") and invertedControls == true)
+		or (love.keyboard.isDown("left") and invertedControls == false) then
 		leftOn = true
 		leftRocketOffsetX = -spaceshipImage:getWidth() * .4
 		leftRocketOffsetY = -spaceshipImage:getHeight() / 4
@@ -140,7 +143,8 @@ function love.update(dt)
 			rocketforce * math.sin(spaceship.body:getAngle()),
 			spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY))
 	end
-	if love.keyboard.isDown("right") then
+	if (love.keyboard.isDown("left") and invertedControls == true)
+		or (love.keyboard.isDown("right") and invertedControls == false) then
 		rightOn = true
 		rightRocketOffsetX = -spaceshipImage:getWidth() * .4
 		rightRocketOffsetY = spaceshipImage:getHeight() / 4
@@ -187,6 +191,12 @@ function love.update(dt)
 		maxY = maxY + moveCameraAmount
 		indicatorY = indicatorY + moveCameraAmount
 
+	end
+end
+
+function love.keypressed(key)
+	if key == "i" then
+		invertedControls = not invertedControls
 	end
 end
 
@@ -247,7 +257,9 @@ function displayScore()
 		local worldX, worldY = spaceship.body:getWorldPoint(leftRocketOffsetX, leftRocketOffsetY)
 		love.graphics.circle("fill", worldX , worldY , 10, 100)
 	end
-	-- love.graphics.print("prevline: "..previousLine, maxX, maxY + 225)
+	if not invertedControls then
+		love.graphics.print("Legacy Controls Activated", maxX, maxY + 25)
+	end
 	-- love.graphics.print("nextline: "..nextLine, maxX, maxY + 250)
 	-- love.graphics.print("cameraHeight "..-cameraMiddle + 325, maxX, maxY + 275)
 end
