@@ -59,9 +59,14 @@ function love.load()
 
 	love.physics.setMeter(64)
 	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
-	world = love.physics.newWorld(0, 64*7.5*.72, true)
-	--world = love.physics.newWorld(0, 0, true)
 	rocketforce = 2000
+	resetWorld()
+
+end
+
+function resetWorld()
+		world = love.physics.newWorld(0, 64*7.5*.72, true)
+
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
@@ -120,6 +125,7 @@ function love.load()
 	love.graphics.print(maxDisplay, maxX, maxY)
 end
 
+
 function love.update(dt)
 	leftOn = false
 	rightOn = false
@@ -151,9 +157,6 @@ function love.update(dt)
 		spaceship.body:applyForce(rocketforce * math.cos(spaceship.body:getAngle()),
 			rocketforce * math.sin(spaceship.body:getAngle()),
 			spaceship.body:getWorldPoint(rightRocketOffsetX, rightRocketOffsetY))
-	end
-	if love.keyboard.isDown(" ") then
-		love.load()
 	end
 
 	previousLine = getPreviousLine()
@@ -197,6 +200,9 @@ end
 function love.keypressed(key)
 	if key == "i" then
 		invertedControls = not invertedControls
+	end
+	if key == " " then
+		resetWorld()
 	end
 end
 
@@ -260,8 +266,6 @@ function displayScore()
 	if not invertedControls then
 		love.graphics.print("Legacy Controls Activated", maxX, maxY + 25)
 	end
-	-- love.graphics.print("nextline: "..nextLine, maxX, maxY + 250)
-	-- love.graphics.print("cameraHeight "..-cameraMiddle + 325, maxX, maxY + 275)
 end
 
 function getPreviousLine()
