@@ -115,8 +115,8 @@ function resetWorld()
 	gates = {}
 	for i = 1,1000 do
 		gates[i] = {}
-		gates[i].leftLength = math.random() * love.window:getWidth() / 2
-		gates[i].rightLength = love.window:getWidth() / 2 - gates[i].leftLength
+		gates[i].leftLength = math.random() * windowWidth / 2
+		gates[i].rightLength = windowWidth / 2 - gates[i].leftLength
 	end
 	--generateObstacles(nObstacles, 6)
 	
@@ -142,7 +142,7 @@ function love.update(dt)
 	world:update(dt)
 
 	walls.leftBody:setPosition(0, spaceship.body:getY())
-	walls.rightBody:setPosition(love.window:getWidth(), spaceship.body:getY())
+	walls.rightBody:setPosition(windowWidth, spaceship.body:getY())
 
 	local xVelocity, yVelocity = spaceship.body:getLinearVelocity();
 	spaceship.body:applyForce(-resistanceCoeff * xVelocity * math.abs(xVelocity), 0)
@@ -170,7 +170,7 @@ function love.update(dt)
 
 	previousLine = getPreviousLine()
 	nextLine = getNextLine()
-	cameraMiddleHeight = -cameraMiddle + love.window.getHeight()/2
+	cameraMiddleHeight = -cameraMiddle + halfWindowHeight
 
 	moveCamera = false
 	currentHeight = startY - spaceship.body:getY()
@@ -194,7 +194,7 @@ function love.update(dt)
 		maxY = maxY + moveCameraAmount
 		indicatorY = indicatorY + moveCameraAmount
 	end
-	if spaceship.body:getY() > cameraQuarter and cameraMiddle < love.window.getHeight()/2 then
+	if spaceship.body:getY() > cameraQuarter and cameraMiddle < halfWindowHeight then
 		moveCamera = true
 		moveCameraAmount = spaceship.body:getY() - cameraQuarter --this is positive
 		cameraMiddle = cameraMiddle + moveCameraAmount
@@ -225,7 +225,7 @@ function love.draw()
 	end
 	if j > 1 then
 		addGate(nextLine, gates[j].leftLength, gates[j].rightLength)
-		drawIndicator(gates[j].leftLength + love.window:getWidth() / 4)
+		drawIndicator(gates[j].leftLength + windowWidth / 4)
 	end
 
 	displayScore()
@@ -287,7 +287,7 @@ end
 
 function drawLines(center, h)
 	for height = h - 1000, h, 100 do
-		if math.abs(cameraMiddleHeight - height) < love.window.getHeight()/2 then
+		if math.abs(cameraMiddleHeight - height) < halfWindowHeight then
 			local printHeight = cameraMiddle + cameraMiddleHeight - height
 			love.graphics.line(center - 10, printHeight, center + 10, printHeight)
 		end
@@ -299,7 +299,7 @@ function drawIndicator(center)
 end
 
 function addGate(height, leftLength, rightLength)
-	if math.abs(cameraMiddleHeight - height) < love.window.getHeight()/2 then
+	if math.abs(cameraMiddleHeight - height) < halfWindowHeight then
 		local printHeight = cameraMiddle + cameraMiddleHeight - height
 		leftGate = {}
 		rightGate = {}
@@ -308,7 +308,7 @@ function addGate(height, leftLength, rightLength)
 		leftGate.fixture = love.physics.newFixture(leftGate.body, leftGate.shape)
 		leftGate.fixture:setRestitution(.5)
 		leftGate.fixture:setFriction(1)
-		rightGate.body = love.physics.newBody(world, love.window:getWidth() - rightLength / 2, printHeight)
+		rightGate.body = love.physics.newBody(world, windowWidth - rightLength / 2, printHeight)
 		rightGate.shape = love.physics.newRectangleShape(rightLength, 20)
 		rightGate.fixture = love.physics.newFixture(rightGate.body, rightGate.shape)
 		rightGate.fixture:setRestitution(.5)
@@ -316,8 +316,6 @@ function addGate(height, leftLength, rightLength)
 
 		love.graphics.polygon("fill", leftGate.body:getWorldPoints(leftGate.shape:getPoints()))
 		love.graphics.polygon("fill", rightGate.body:getWorldPoints(rightGate.shape:getPoints()))
-		--love.graphics.rectangle("fill", 0, printHeight-10, leftLength, 20)
-		--love.graphics.rectangle("fill", love.window:getWidth()-rightLength, printHeight-10, rightLength, 20)
 	end
 end
 
@@ -326,8 +324,8 @@ function generateObstacles(start, n, m, height)
 		obstacles[i] = {}
 		local obst = obstacles[i]
 		obst.radius = 30 + math.random() * 30
-		obst.x = 2*obst.radius + math.random() * (love.window:getWidth() - 4*obst.radius)
-		obst.y = -math.random() * love.window:getHeight() * m - height
+		obst.x = 2*obst.radius + math.random() * (windowWidth - 4*obst.radius)
+		obst.y = -math.random() * windowHeight * m - height
 		--print (obst.y)
 		obst.xVelocity = (2 * math.random() - 1) * 500
 		obst.yVelocity = (2 * math.random() - 1) * 200
