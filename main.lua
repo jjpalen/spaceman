@@ -7,7 +7,10 @@ require "camera"
 
 local moveCamera = false
 local moveCameraAmount = 0
-local cameraMiddle = love.graphics:getHeight() / 2
+local windowHeight = love.graphics:getHeight()
+local windowWidth = love.graphics:getWidth()
+local cameraMiddle = windowHeight / 2
+local halfWindowHeight = cameraMiddle
 local cameraQuarter = 3 * cameraMiddle / 2
 
 local heightDisplayRoot = "Height: "
@@ -42,6 +45,14 @@ local metersPerScreen
 
 local invertedControls = true
 
+local gravity = 5.4
+local spaceshipAngularDamping = .5
+local spaceshipLinearDamping = .07
+local spaceshipDensity = 2
+local rocketforce = 2000
+local wallFriction = 1
+local wallRestitution = .8
+
 local ground = {}
 
 function random99to101()
@@ -53,49 +64,48 @@ function love.load()
 	spaceshipImage = love.graphics.newImage("assets/spaceship96x96.png")
 	rocketTexture = love.graphics.newImage("assets/yellowtexture.png")
 	groundImage = love.graphics.newImage("assets/ground_0.png")
-	groundY = love.graphics:getHeight() - groundImage:getHeight()
+	groundY = windowHeight - groundImage:getHeight()
 
 	love.graphics.setBackgroundColor(30, 0, 30)
 
 	love.physics.setMeter(64)
-	metersPerScreen = love.window.getHeight() / love.physics.getMeter()
-	rocketforce = 2000
+	metersPerScreen = windowHeight / love.physics.getMeter()
 	resetWorld()
 
 end
 
 function resetWorld()
-		world = love.physics.newWorld(0, 64*7.5*.72, true)
+	world = love.physics.newWorld(0, love.physics.getMeter()*gravity, true)
 
 	spaceship = {}
 	spaceship.body = love.physics.newBody(world, 400, 650/2, "dynamic") --place the body in the center of the world and make it dynamic, so it can move around
 	startY = spaceship.body:getY()
 	local x,y,mass,inertia = spaceship.body:getMassData()
 	x = x + spaceshipImage:getHeight() / 6
-	spaceship.body:setAngularDamping(0.5)
-	spaceship.body:setLinearDamping(0.07)
+	spaceship.body:setAngularDamping(spaceshipAngularDamping)
+	spaceship.body:setLinearDamping(spaceshipAngularDamping)
 	spaceship.body:setAngle(-math.pi/2 * random99to101()^6)
 	spaceship.body:setBullet(true)
 	spaceship.shape = love.physics.newPolygonShape(48,0, -16,48, -32,48, -48,0, -32,-48, -16,-48)
-	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, 2) -- Attach fixture to body and give it a density of 1.
+	spaceship.fixture = love.physics.newFixture(spaceship.body, spaceship.shape, spaceshipDensity) -- Attach fixture to body and give it a density of 1.
 
 	ground = {}
-	ground.body = love.physics.newBody(world, love.graphics:getWidth()/2, groundY + groundImage:getHeight()/2) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
+	ground.body = love.physics.newBody(world, windowWidth / 2, groundY + halfWindowHeight) --remember, the shape (the rectangle we create next) anchors to the body from its center, so we have to move it to (650/2, 650-50/2)
 	ground.shape = love.physics.newRectangleShape(groundImage:getDimensions())
 	ground.fixture = love.physics.newFixture(ground.body, ground.shape) --attach shape to body
 	ground.fixture:setRestitution(.25)
 
 	walls = {}
 	walls.leftBody = love.physics.newBody(world, 0, 0)
-	walls.leftShape = love.physics.newRectangleShape(1,400 * love.window:getHeight())
+	walls.leftShape = love.physics.newRectangleShape(1,400 * windowHeight)
 	walls.leftFixture = love.physics.newFixture(walls.leftBody, walls.leftShape)
-	walls.leftFixture:setRestitution(.8)
-	walls.leftFixture:setFriction(1)
-	walls.rightBody = love.physics.newBody(world, love.window.getWidth(), 0)
-	walls.rightShape = love.physics.newRectangleShape(1, 400 * love.window:getHeight())
+	walls.leftFixture:setRestitution(wallRestitution)
+	walls.leftFixture:setFriction(wallFriction)
+	walls.rightBody = love.physics.newBody(world, windowWidth, 0)
+	walls.rightShape = love.physics.newRectangleShape(1, 400 * windowHeight)
 	walls.rightFixture = love.physics.newFixture(walls.rightBody, walls.rightShape)
-	walls.rightFixture:setRestitution(.8)
-	walls.rightFixture:setFriction(1)
+	walls.rightFixture:setRestitution(wallRestitution)
+	walls.rightFixture:setFriction(wallFriction)
 
 	rightOn = false
 	leftOn = false
@@ -136,9 +146,8 @@ function love.update(dt)
 
 	local xVelocity, yVelocity = spaceship.body:getLinearVelocity();
 	spaceship.body:applyForce(-resistanceCoeff * xVelocity * math.abs(xVelocity), 0)
-	--if yVelocity < 0 then
-		spaceship.body:applyForce(0, -resistanceCoeff * yVelocity * math.abs(yVelocity))
-	--end
+	spaceship.body:applyForce(0, -resistanceCoeff * yVelocity * math.abs(yVelocity))
+
 	if (love.keyboard.isDown("right") and invertedControls == true)
 		or (love.keyboard.isDown("left") and invertedControls == false) then
 		leftOn = true
@@ -161,7 +170,7 @@ function love.update(dt)
 
 	previousLine = getPreviousLine()
 	nextLine = getNextLine()
-	cameraMiddleHeight = -cameraMiddle + 325
+	cameraMiddleHeight = -cameraMiddle + love.window.getHeight()/2
 
 	moveCamera = false
 	currentHeight = startY - spaceship.body:getY()
@@ -185,7 +194,7 @@ function love.update(dt)
 		maxY = maxY + moveCameraAmount
 		indicatorY = indicatorY + moveCameraAmount
 	end
-	if spaceship.body:getY() > cameraQuarter and cameraMiddle < 300 then
+	if spaceship.body:getY() > cameraQuarter and cameraMiddle < love.window.getHeight()/2 then
 		moveCamera = true
 		moveCameraAmount = spaceship.body:getY() - cameraQuarter --this is positive
 		cameraMiddle = cameraMiddle + moveCameraAmount
